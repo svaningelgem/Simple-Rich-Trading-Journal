@@ -3,6 +3,8 @@ from dash import html
 import __env__
 from config import imgs, styles
 
+from ..config import config
+
 MODAL = html.Div(
     [
         html.Div(
