@@ -101,33 +101,6 @@ def _make_profile(profile_path: str, force: bool = False):
     return _upgrade_profile(profile_path)
 
 
-def _demo_init():
-    print(__ini__.logtags.demo_init, "@", __demo_home__)
-
-    _make_profile(__demo_home__, force=True)
-
-    demo_rc = _files.make_path(__demo_home__, _files.file_rc)
-    with open(_files.make_path(_files.demo_env, _files.file_rc)) as _if, open(demo_rc, "w") as _of:
-        _of.write(_if.read())
-
-    demo_plugin = _files.make_path(__demo_home__, _files.file_plugin)
-    with open(_files.make_path(_files.demo_env, _files.file_plugin)) as _if, open(demo_plugin, "w") as _of:
-        _of.write(_if.read())
-
-    demo_journal = _files.make_path(__demo_home__, _files.file_journal)
-    with open(_files.make_path(_files.demo_env, _files.file_journal), "rb") as _if, open(demo_journal, "wb") as _of:
-        _of.write(_if.read())
-
-    demo_call_gui = _files.make_path(__demo_home__, _files.file_call_gui)
-    with open(_files.make_path(_files.demo_env, _files.file_call_gui), "rb") as _if, open(demo_call_gui, "wb") as _of:
-        _of.write(_if.read())
-
-    demo_file_clones = _files.make_path(__demo_home__, _files.folder_profile_assets, _files.folder_file_clones)
-    for e in scandir(_files.make_path(_files.demo_env, _files.folder_profile_assets, _files.folder_file_clones)):
-        with open(e.path, "rb") as _if, open(_files.make_path(demo_file_clones, e.name), "wb") as _of:
-            _of.write(_if.read())
-
-
 def _upgrade_root(profiles_home: str):
     _call_gui = _files.make_path(profiles_home, _files.file_call_gui)
     with open(_files.make_path(_files.env, _files.file_call_gui), "rb") as _if:
@@ -149,16 +122,14 @@ def _upgrade_root(profiles_home: str):
 
 
 def _install(profiles_root: str):
-    global __profiles_home__, __demo_home__
+    global __profiles_home__
     __profiles_home__ = _files.make_path(profiles_root, _files.profiles_home_folder)
-    __demo_home__ = _files.make_path(__profiles_home__, _files.demo_profiles_home_folder)
     print(__ini__.logtags.install, "@", __profiles_home__)
     _make_profile(__profiles_home__)
 
     with open(_files.profiles_home_path_file, "w") as f:
         f.write(__profiles_home__)
 
-    _demo_init()
     _upgrade_root(__profiles_home__)
 
 
@@ -256,7 +227,8 @@ def _autoclean(journal_data):
 
 PROFILE: str = ""
 __profile_folder__: str = ""
-
+storage_config = StorageConfigManager.load_config(__profile_folder__)
+storage_adapter = StorageAdapter(StorageFactory.create(storage_config))
 _globals = globals()
 
 
@@ -357,17 +329,8 @@ try:
 except FileNotFoundError:
     _install(_files.default_install_root)
 
-__demo_home__ = _files.make_path(__profiles_home__, _files.demo_profiles_home_folder)
-
 try:
-    if __ini__.cmdl.DIRECTIVES[0] == "demo":
-        __ini__.cmdl.DIRECTIVES.pop(0)
-        PROFILE = "#demo"
-        __profiles_home__ = __demo_home__
-        if __ini__.cmdl.DIRECTIVES[0] == "init":
-            __ini__.cmdl.DIRECTIVES.pop(0)
-            _demo_init()
-    elif __ini__.cmdl.DIRECTIVES[0] == "upgrade":
+    if __ini__.cmdl.DIRECTIVES[0] == "upgrade":
         __ini__.cmdl.DIRECTIVES.pop(0)
         if __ini__.cmdl.DIRECTIVES and __ini__.cmdl.DIRECTIVES[0] == "all":
             __env = Namespace(**globals())
@@ -750,7 +713,6 @@ HISTORY = _files.make_path(__profile_folder__, _files.file_history)
 
 pickleProtocol = pickle.HIGHEST_PROTOCOL
 
-
 def _init_data():
     global JOURNAL_DATA, HISTORY_DATA, HISTORY_KEYS_X_TIME_REVSORT, LAST_HISTORY_CREATION_TIME
     __firstrun = [{"id": 0, "n": 0, "InvestTime": datetime.now().strftime(timeFormatTransaction), "InvestAmount": 1}]
@@ -762,7 +724,7 @@ def _init_data():
     except FileNotFoundError:
         print(__ini__.logtags.profile_init, "journal/first run:", __firstrun)
         JOURNAL_DATA = __firstrun
-        dump_journal(JOURNAL_DATA)
+        storage_adapter.dump_journal(JOURNAL_DATA)
     try:
         print(__ini__.logtags.profile_init, "history/load:", HISTORY)
         with open(HISTORY, "rb") as __f:
@@ -787,7 +749,7 @@ def _init_data():
 
     if do_dump:
         print(__ini__.logtags.profile_init, "plugin/journal -> dump")
-        dump_journal(JOURNAL_DATA)
+        storage_adapter.dump_journal(JOURNAL_DATA)
         make_history()
     elif make_hist:
         print(__ini__.logtags.profile_init, "plugin/history -> dump")
@@ -817,13 +779,6 @@ def _init_data():
     LAST_HISTORY_CREATION_TIME = HISTORY_DATA[HISTORY_KEYS_X_TIME_REVSORT[0][0]]["time"]
 
     return JOURNAL_DATA
-
-
-def dump_journal(data: list[dict]):
-    global JOURNAL_DATA
-    JOURNAL_DATA = data
-    with open(JOURNAL, "wb") as __f:
-        pickle.dump(data, __f, pickleProtocol)
 
 
 if pluginQuickDisable:

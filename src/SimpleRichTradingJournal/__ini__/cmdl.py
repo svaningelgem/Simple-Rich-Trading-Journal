@@ -66,8 +66,6 @@ help
     Show the origin rconfig file on stdout and exit.
 / <profile> [<rc key> <rc value> ...]
     Load or create a sub-profile.
-demo [init] [<rc key> <rc value> ...]
-    Start [and initialize] the demo.
 """
 )
 

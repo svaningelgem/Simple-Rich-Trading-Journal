@@ -30,7 +30,6 @@ Create an issue or write me a message to [srccircumflex-srtj@outlook.com](mailto
 - [Install and Run](#install-and-run)
     - [Required System Rights](#required-system-rights)
     - [Upgrade and Migration](#upgrade-and-migration)
-    - [Demo](#demo)
 - [The Journal](#the-journal)
     - [General Information](#general-information)
     - [Records](#records)
@@ -457,12 +456,6 @@ See also [Your Display Environ (GUI)](#your-display-environ-gui).
 This folder contains a sub-profile. Its structure corresponds to the main profile, with the exception of `call-gui-engine`.
 
 See also [Creating a Sub-Profile](#creating-a-sub-profile).
-
-#### /#demo
-
-This folder contains the demo profile.
-
-See also [Demo](#demo).
 
 ### Creating a Sub-Profile
 

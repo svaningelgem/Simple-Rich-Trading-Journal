@@ -15,7 +15,6 @@ profile_make = "[ make ]"
 profile_load = "[ load ]"
 profile_init = "[ init ]"
 cmdl = "[ cmdl ]"
-demo_init = "[ init ]"
 cleaner = "[ Clnr ]"
 
 error = "\x1b[31m[ ERROR ]\x1b[m"

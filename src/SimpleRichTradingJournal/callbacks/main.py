@@ -359,7 +359,7 @@ def call(
 
     def save():
         if i_auto_save_n_clicks:
-            __env__.dump_journal(__lc__.__mainFrame__.__get_log_json__())
+            __env__.storage_adapter.dump_journal(__lc__.__mainFrame__.__get_log_json__())
 
     def set_index_by():
         nonlocal o_index_by_button_style, o_index_by_button_children, o_scope_by_button_style

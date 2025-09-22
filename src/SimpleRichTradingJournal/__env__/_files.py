@@ -34,5 +34,3 @@ env = make_path(proj_root, "__env__")
 profiles_home_folder = "Trading-Journals.srtj"
 profile_prefix = "%"
 profiles_home_path_file = make_path(userhome, ".srtj")
-demo_env = make_path(proj_root, "__env__", "#demo")
-demo_profiles_home_folder = "#demo"
