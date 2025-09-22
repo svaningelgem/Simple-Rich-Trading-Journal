@@ -1,5 +1,6 @@
 import __env__
 from config.styles.log import *
+import config.loader as config
 
 
 dataTypeDefinitions = {
@@ -123,8 +124,8 @@ Name = {
         ],
         "defaultStyle": name_undefined,
     },
-    "width": __env__.logColWidths[0],
-    "hide": not __env__.logColWidths[0]
+    "width": config.log().col_widths[0],
+    "hide": not config.log().col_widths[0]
 }
 
 Name["cellStyle"]["styleConditions"] = [
@@ -175,39 +176,39 @@ Rating = {
         "styleConditions": [
             {
                 "condition": "params.value > 8",
-                "style": rating | {"backgroundColor": __env__.color_theme.rating_scale[8]},
+                "style": rating | {"backgroundColor": config.themes().rating_scale[8]},
             },
             {
                 "condition": "params.value > 7",
-                "style": rating | {"backgroundColor": __env__.color_theme.rating_scale[7]},
+                "style": rating | {"backgroundColor": config.themes().rating_scale[7]},
             },
             {
                 "condition": "params.value > 6",
-                "style": rating | {"backgroundColor": __env__.color_theme.rating_scale[6]},
+                "style": rating | {"backgroundColor": config.themes().rating_scale[6]},
             },
             {
                 "condition": "params.value > 5",
-                "style": rating | {"backgroundColor": __env__.color_theme.rating_scale[5]},
+                "style": rating | {"backgroundColor": config.themes().rating_scale[5]},
             },
             {
                 "condition": "params.value > 4",
-                "style": rating | {"backgroundColor": __env__.color_theme.rating_scale[4]},
+                "style": rating | {"backgroundColor": config.themes().rating_scale[4]},
             },
             {
                 "condition": "params.value > 3",
-                "style": rating | {"backgroundColor": __env__.color_theme.rating_scale[3]},
+                "style": rating | {"backgroundColor": config.themes().rating_scale[3]},
             },
             {
                 "condition": "params.value > 2",
-                "style": rating | {"backgroundColor": __env__.color_theme.rating_scale[2]},
+                "style": rating | {"backgroundColor": config.themes().rating_scale[2]},
             },
             {
                 "condition": "params.value > 1",
-                "style": rating | {"backgroundColor": __env__.color_theme.rating_scale[1]},
+                "style": rating | {"backgroundColor": config.themes().rating_scale[1]},
             },
             {
                 "condition": "params.value > 0",
-                "style": rating | {"backgroundColor": __env__.color_theme.rating_scale[0]},
+                "style": rating | {"backgroundColor": config.themes().rating_scale[0]},
             },
         ],
         "defaultStyle": rating,

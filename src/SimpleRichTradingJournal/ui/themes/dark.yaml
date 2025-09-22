@@ -1,0 +1,200 @@
+# Dark Theme Configuration
+table_theme: "ag-theme-balham-auto-dark"
+
+# Main colors
+main:
+  table_bg_main: "#2d3436"
+  table_bg_2: "#262c2e"
+  table_bg_header: "#1c1c1c"
+  table_fg_main: "#e3e3e3"
+  table_fg_header: "#a7a7a7"
+  table_sep: "#5c5c5c"
+
+# Row marking
+row_mark: "#00dbff1f"
+
+# Alt colors
+alt:
+  neg: "#6699ff"
+  pos: "#c8c800"
+
+# Column backgrounds
+columns:
+  name: ""
+  symbol: ""
+  isin: ""
+  type: ""
+  short: ""
+  sector: ""
+  category: ""
+  rating: ""
+  n: ""
+  invest: "#66990019"
+  take: "#ff505019"
+  itc: ""
+  result: "#66999925"
+  holdtime: "#9999ff19"
+  note: ""
+  hypotheses: ""
+
+# Record type labels
+records:
+  deposit: "green"
+  payout: "#ff3333"
+  itc: "#e68a00"
+  dividend: "#0080ff"
+  opentrade: "#C47EFF"
+
+# Cell value highlighting
+cell_values:
+  pos: "#03ac03"
+  neg: "red"
+
+# Other markings
+marks:
+  note: "#FFDF804D"
+  gray: "gray"
+  error: "red"
+  undefined: "#ff33334D"
+
+# Rating scales
+rating_scale:
+  - "#d64421"
+  - "#cd5922"
+  - "#c46e23"
+  - "#bb8324"
+  - "#b29825"
+  - "#a9ad26"
+  - "#a0c227"
+  - "#97d728"
+  - "#8ee928"
+
+alt_rating_scale:
+  - "#0064b2"
+  - "#20769c"
+  - "#408886"
+  - "#609a70"
+  - "#80ac5a"
+  - "#a0be44"
+  - "#c0d02e"
+  - "#e0e218"
+  - "#fff400"
+
+# Statistics/Figure colors
+figures:
+  plot: "#2d3436"
+  paper: "#2d3436"
+  font: "#dedddc"
+  grid: "#394446"
+  spike: "white"
+
+  traces:
+    profit: "#636efa"
+    summary: "#884dff"
+    current_performance: "#99ff33"
+    dripping_performance: "#339933"
+    summary_rate: "#00ff99"
+    deposit: "#ff97ff"
+    payout: "#ff3333"
+    money: "#ffa15a"
+    trade_sum_invest: "#ff97ff"
+    trade_sum_take: "#ef553b"
+    trade_performance: "#b6e880"
+    profit_per_day_avg: "#636efa"
+    performance_per_day_avg: "#ccff99"
+    trade_sum_invest_trailing: "#ff97ff"
+    trade_sum_take_trailing: "#ef553b"
+    trade_performance_trailing: "#ccff99"
+    profit_per_day_avg_trailing: "#636efa"
+    performance_per_day_avg_trailing: "#ccff99"
+    activity: "#19d3f3"
+    holdtime_avg: "#ffff66"
+
+  shapes:
+    last_calc: "#d6d6c2"
+
+# Position color palette
+color_palette_positions:
+  - "#1F77B4"
+  - "#FF7F0E"
+  - "#2CA02C"
+  - "#D62728"
+  - "#9467BD"
+  - "#8C564B"
+  - "#E377C2"
+  - "#7F7F7F"
+  - "#BCBD22"
+  - "#17BECF"
+  - "#3366CC"
+  - "#DC3912"
+  - "#FF9900"
+  - "#109618"
+  - "#990099"
+  - "#0099C6"
+  - "#DD4477"
+  - "#66AA00"
+  - "#B82E2E"
+  - "#316395"
+  - "#4C78A8"
+  - "#F58518"
+  - "#E45756"
+  - "#72B7B2"
+  - "#54A24B"
+  - "#EECA3B"
+  - "#B279A2"
+  - "#FF9DA6"
+  - "#9D755D"
+  - "#BAB0AC"
+
+# Footer/buttons
+footer:
+  statistics_button_border: "rgba(102, 0, 255, 0.5)"
+  statistics_button_shadow: "rgba(0, 207, 255, 0.35)"
+  balance_button_border: "rgba(0, 255, 207, 0.5)"
+  balance_button_shadow: "rgba(0, 255, 76, 0.35)"
+  sig1: "#660066"
+  sig2: "#999900"
+
+# Top bar
+topbar:
+  onoff_bg: "#48b9c7"
+  onoff_fg: "black"
+  by_index_off: "linear-gradient(90deg, rgba(102, 153, 0, 0.22) 0%, rgba(255, 80, 80, 0.2) 100%)"
+
+# Balance sheet
+balance:
+  col1_sep: "#715858"
+  col_year: "rgb(233, 251, 255)"
+  header_year: "rgb(203, 240, 249)"
+  quarter_sep: "#970000"
+  current_sep: "#cc0099"
+  col_t52: "rgb(249, 239, 255)"
+  header_t52: "rgb(240, 212, 255)"
+  col_current: "rgb(252, 244, 255)"
+  header_current: "rgb(246, 221, 255)"
+  cell_active_bg: "#cce0ff"
+  cell_selected_bg: "#cce0ff"
+  hover_bg: "rgb(218, 230, 247)"
+
+# Note interface
+notepaper:
+  bg: "#ffffff"
+  def_transparency: "ce"
+  fg: "#000000"
+  border: "#ddd"
+  link: "blue"
+
+notebook:
+  bg: "#ffffff"
+  def_transparency: "dd"
+  gutter_bg: "#f7f7f7"
+  def_gutter_transparency: ""
+
+# Note editor dialog
+noteeditor_dialog:
+  fg: "black"
+  bg: "wheat"
+  border: "red"
+  ignore: "#ffffff47"
+  rename: "#0ad57f47"
+  overwrite: "#d50a0a61"

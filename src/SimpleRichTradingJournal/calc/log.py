@@ -298,7 +298,7 @@ class TradeOpen(_Trade):
     def __init__(self, row_dat: dict, index_date: datetime, amount: float | None, default_date: datetime, has_take: bool):
         _Trade.__init__(self, row_dat, index_date, amount, default_date)
         self.has_take = has_take
-        if __env__.plugin.course_call(self.row_dat, manual_take_amount):
+        if config.plugins().course_call(self.row_dat, manual_take_amount):
             self.has_take = self.row_dat.get("TakeAmount") is not None
         if self.has_take:
             self.make_data()
@@ -307,7 +307,7 @@ class TradeOpen(_Trade):
         return self.__class__(self.row_dat.copy(), self._idx_date, self.amount, self.default_date, self.has_take)
 
     def update_course(self) -> TradeOpen:
-        if __env__.plugin.course_call(self.row_dat, False):
+        if config.plugins().course_call(self.row_dat, False):
             self.has_take = self.row_dat.get("TakeCourse") is not None
             self.make_data()
         return self

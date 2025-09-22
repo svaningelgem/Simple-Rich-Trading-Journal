@@ -40,7 +40,7 @@ POP = html.Div([
 
 _dragcontainer = list()
 _dragcontainer_ids = list()
-for i in __env__.statisticsPerformanceOrder:
+for i in config.statistics().performance.order:
     if i not in _dragcontainer_ids:
         _dragcontainer_ids.append(i)
         _dragcontainer.append(

@@ -14,12 +14,14 @@ from dash import Dash
 
 import __ini__.cmdl
 import __ini__.logtags
+from config.loader import init_config
 
 __project_name__ = "Simple Rich Trading Journal"
 
 
 def run():
     if __ini__.cmdl.ADMINISTRATIVE:
+        init_config()  # Initialize config early
         import __env__
     else:
         red = [sys.executable, __file__] + sys.argv[1:]

@@ -21,6 +21,8 @@ from config import color_theme
 from . import rconfig, plugin, _upgrade, _files
 from .rconfig import *
 from things import make_assets
+from config.loader import init_config, get_config
+import config.loader as config
 
 
 def _upgrade_profile(
@@ -228,7 +230,17 @@ def _autoclean(journal_data):
 PROFILE: str = ""
 __profile_folder__: str = ""
 storage_config = StorageConfigManager.load_config(__profile_folder__)
-storage_adapter = StorageAdapter(StorageFactory.create(storage_config))
+def _setup_storage():
+    from storage import StorageFactory, StorageAdapter
+    storage_config = {
+        'backend': config.storage().backend,
+        'connection_string': config.storage().connection_string,
+        'table_prefix': config.storage().table_prefix,
+        'file_path': __profile_folder__
+    }
+    return StorageAdapter(StorageFactory.create(storage_config))
+
+storage_adapter = _setup_storage()
 _globals = globals()
 
 

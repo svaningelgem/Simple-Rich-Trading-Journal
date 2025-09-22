@@ -1,0 +1,119 @@
+# Simple Rich Trading Journal Configuration
+app:
+  host: "127.0.0.1"
+  port: 8050
+  profile: ""
+
+startup:
+  flush_open_take_amount: true
+  disable_copy_paste: false
+  disable_footer_life_signal: true
+
+ui:
+  date_format: "international"  # ISO 8601, american, international, ydm, mdy, dmy
+  date_format_first_day_of_week: 1
+  color_theme: "dark"  # dark, light, blank
+  use_default_alt_colors: false
+  checkbox_long_short_styling: "s"  # "", "0", "s", "ls"
+
+  grid:
+    side_init_balance: false
+    side_size_init_scale: 0.2
+    def_width_scale: 0.2
+    min_width_scale: 0.1
+    row3_height: 120
+    bottom_bar_distance_bottom: 105
+    bottom_bar_distance_right: 10
+
+  bind_key_codes:
+    - "KeyC"      # copy
+    - "KeyX"      # cut
+    - "KeyV"      # paste
+    - "KeyA"      # copy row
+    - "KeyY"      # copy row
+    - "KeyZ"      # copy row
+    - "Space"     # autocomplete
+    - "KeyI"      # note
+    - "Backslash" # note back
+    - "KeyM"      # mark
+
+scope:
+  index_by_take_time: false
+  scope_by_index: true
+  strict_scope_by_both: true
+  calc_with_opens: true
+
+log:
+  col_order_asset_id: [-1, 1, 2, 3, 4, 5, 6, 7, 8]
+  col_order_note: [0, 0, 0, 0, 0, 0, 0, 8]
+  col_order: [1, 2, 3, 4, 5, 6, 7, 8]
+  col_widths: [140, 0, 0, 0, 0, 0, 0, 0, 80, 170, 150, 110, 170, 150, 110, 80, 110, 110, 80, 120, 170, 160, 160, 160, 160]
+
+  column_state_cache: "global"  # "", "0", "global", "own"
+
+  cell_renderer_change:
+    take_amount: false
+    take_course: false
+    performance: true
+    profit: true
+
+balance:
+  t52w: true
+  current: true
+  years: true
+  quarters: true
+
+statistics:
+  group_default: [0, 0, 0, 0, 1]
+  sun_max_depth: 4
+  use_sun_max_depth: true
+  id_by_symbol: false
+  use_position_color_cache: "global"
+
+  performance:
+    steps_default: "w"
+    interval_default: "w"
+    frame_default: "q"
+    range_default: 0
+    hypothesis_per_day: false
+    order: [1, 2, 3, 4, 5, 6, 7, 8]
+
+  graph_sizes:
+    performance: 1000
+    pop: 2000
+    open_positions: 500
+    all_positions: 500
+
+notes:
+  paper_default_transparency: true
+  editor_default_transparency: true
+
+  file_drop_cloner: "global"
+  file_drop_cloner_img_alt_name: false
+  link_drop_pattern: "^(https?:\\/\\/|www\\.)"
+  path_drop_pattern: "^(\\/|[A-Z]:\\\\)"
+  file_drop_cloner_flush_trashing: true
+
+  mathjax: false
+  cell_variable_formatter: true
+  mathjax_masker: true
+  unifying: true
+
+plugins:
+  course_update_interval: false
+  course_update_interval_on: false
+  course_update_interval_ms: 10000
+  quick_disable: false
+
+storage:
+  backend: "pickle"  # pickle, sqlite, mysql, postgresql
+  connection_string: ""
+  table_prefix: "srtj_"
+  pickle_protocol: 5  # HIGHEST_PROTOCOL
+
+maintenance:
+  autoclean_interval_s: 2592000  # 30 days
+  n_history_slots: 10
+
+# Theme configuration - loaded from ui/themes/
+themes: !include ui/themes/dark.yaml

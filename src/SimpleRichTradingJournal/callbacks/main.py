@@ -88,7 +88,7 @@ def new_side(
         timedelta(weeks=i_performance_trailing_frame_value),
         timedelta(weeks=i_performance_trailing_interval_value),
         timedelta(weeks=i_performance_range_value),
-        __env__.statisticsPerformanceOrder,
+        config.statistics().performance.order,
         i_hypothesis_per_day_value,
     )
     if i_drag_event_receiver_value:
@@ -424,16 +424,16 @@ def call(
                 o_scope_by_button_children = "Scope\u2007by\u2007Both\u2007"
 
             if __env__.startupFlushOpenTakeAmount:
-                _course_call = __env__.plugin.course_call
+                _course_call = config.plugins().course_call
 
                 def course_call(row, _):
                     row.pop("TakeAmount", None)
                     row.pop("TakeCourse", None)
                     return True
 
-                __env__.plugin.course_call = course_call
+                config.plugins().course_call = course_call
                 new_table(__env__.JOURNAL_DATA)
-                __env__.plugin.course_call = _course_call
+                config.plugins().course_call = _course_call
 
             new_table(__env__.JOURNAL_DATA)
 

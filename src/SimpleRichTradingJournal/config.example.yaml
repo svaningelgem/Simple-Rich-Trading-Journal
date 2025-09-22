@@ -1,0 +1,144 @@
+# Example Configuration for Simple Rich Trading Journal
+# Copy this file to 'config.yaml' and modify as needed
+
+# Application settings
+app:
+  host: "127.0.0.1"           # Server host address
+  port: 8050                  # Server port (1024-65535)
+  profile: ""                 # Profile name (empty for default)
+
+# Startup behavior
+startup:
+  flush_open_take_amount: true       # Clear open trade amounts on startup
+  disable_copy_paste: false          # Disable copy/paste functionality
+  disable_footer_life_signal: true   # Disable footer animation
+
+# User interface settings
+ui:
+  date_format: "international"       # Date format: ISO 8601, american, international, ydm, mdy, dmy
+  date_format_first_day_of_week: 1   # First day of week (0=Sunday, 1=Monday, etc.)
+  color_theme: "dark"                 # Theme: dark, light, blank
+  use_default_alt_colors: false      # Use alternative colors
+  checkbox_long_short_styling: "s"   # Styling: "", "0", "s", "ls"
+
+  # Grid layout
+  grid:
+    side_init_balance: false          # Show balance section on startup
+    side_size_init_scale: 0.2         # Initial sidebar size (0.0-1.0)
+    def_width_scale: 0.2              # Default width scale
+    min_width_scale: 0.1              # Minimum width scale
+    row3_height: 120                  # Footer height in pixels
+    bottom_bar_distance_bottom: 105   # Bottom bar distance from bottom
+    bottom_bar_distance_right: 10     # Bottom bar distance from right
+
+  # Keyboard shortcuts (JavaScript key codes)
+  bind_key_codes:
+    - "KeyC"        # Copy
+    - "KeyX"        # Cut
+    - "KeyV"        # Paste
+    - "KeyA"        # Copy row
+    - "KeyY"        # Copy row
+    - "KeyZ"        # Copy row
+    - "Space"       # Autocomplete
+    - "KeyI"        # Note
+    - "Backslash"   # Note back
+    - "KeyM"        # Mark
+
+# Data scoping behavior
+scope:
+  index_by_take_time: false          # Index by take time instead of invest time
+  scope_by_index: true               # Scope by index vs both
+  strict_scope_by_both: true         # Strict scoping when using both
+  calc_with_opens: true              # Include open trades in calculations
+
+# Journal log configuration
+log:
+  # Column order for asset identification (-1 = pinned left, 0 = hidden, positive = order)
+  col_order_asset_id: [-1, 1, 2, 3, 4, 5, 6, 7, 8]
+
+  # Column order for notes section
+  col_order_note: [0, 0, 0, 0, 0, 0, 0, 8]
+
+  # Overall column group order
+  col_order: [1, 2, 3, 4, 5, 6, 7, 8]
+
+  # Column widths (0 = hidden)
+  col_widths: [140, 0, 0, 0, 0, 0, 0, 0, 80, 170, 150, 110, 170, 150, 110, 80, 110, 110, 80, 120, 170, 160, 160, 160, 160]
+
+  # Column state caching: "", "0", "global", "own"
+  column_state_cache: "global"
+
+  # Cell renderer change animations
+  cell_renderer_change:
+    take_amount: false
+    take_course: false
+    performance: true
+    profit: true
+
+# Balance section
+balance:
+  t52w: true          # Show trailing 52 weeks
+  current: true       # Show current period
+  years: true         # Show yearly data
+  quarters: true      # Show quarterly data
+
+# Statistics configuration
+statistics:
+  group_default: [0, 0, 0, 0, 1]     # Default grouping (0=ignored)
+  sun_max_depth: 4                   # Maximum sunburst depth
+  use_sun_max_depth: true            # Use max depth by default
+  id_by_symbol: false                # Use symbol instead of name for ID
+  use_position_color_cache: "global" # Position color caching
+
+  # Performance analysis
+  performance:
+    steps_default: "w"               # Calculation block frame: w, m, q
+    interval_default: "w"            # Calculation interval: w, m, q
+    frame_default: "q"               # Trailing block frame: w, m, q
+    range_default: 0                 # Time range (months, 0=alltime)
+    hypothesis_per_day: false        # Use per-day vs per-year hypothesis
+    order: [1, 2, 3, 4, 5, 6, 7, 8]  # Graph display order
+
+  # Graph sizes (pixels)
+  graph_sizes:
+    performance: 1000
+    pop: 2000
+    open_positions: 500
+    all_positions: 500
+
+# Notes interface
+notes:
+  paper_default_transparency: true         # Default transparency for note paper
+  editor_default_transparency: true       # Default transparency for editor
+  file_drop_cloner: "global"              # File drop cloning: "", "0", "global", "own"
+  file_drop_cloner_img_alt_name: false    # Use alt names for images
+  link_drop_pattern: "^(https?:\\/\\/|www\\.)"    # URL detection pattern
+  path_drop_pattern: "^(\\/|[A-Z]:\\\\)"          # File path detection pattern
+  file_drop_cloner_flush_trashing: true   # Move to trash before deletion
+  mathjax: false                           # Enable LaTeX/Math rendering
+  cell_variable_formatter: true           # Enable cell variable formatting
+  mathjax_masker: true                     # Auto-mask LaTeX brackets
+  unifying: true                           # Merge notes by name
+
+# Plugin system
+plugins:
+  course_update_interval: false           # Enable course update interval
+  course_update_interval_on: false       # Start with interval on
+  course_update_interval_ms: 10000       # Update interval in milliseconds
+  quick_disable: false                    # Quick disable all plugins
+
+# Storage backend
+storage:
+  backend: "pickle"                       # Backend: pickle, sqlite, mysql, postgresql
+  connection_string: ""                   # Database connection string (for SQL backends)
+  table_prefix: "srtj_"                   # Database table prefix
+  pickle_protocol: 5                      # Pickle protocol version
+
+# Maintenance and cleanup
+maintenance:
+  autoclean_interval_s: 2592000          # Auto-cleanup interval (30 days)
+  n_history_slots: 10                    # Number of history backup slots
+
+# Theme configuration
+# Include theme from separate file for better organization
+themes: !include ui/themes/dark.yaml
