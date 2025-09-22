@@ -6,58 +6,48 @@ from sqlalchemy.orm import sessionmaker
 from logprise import logger
 from ..config.models import Config
 from ..config.loader import load_config
-from .models import Base, TradeTable, History, Trade
+from .models import Base, TradeTable, History, Trade, HistoryTrades
 
 class Repository(ABC):
-    """Abstract interface for storage operations."""
-
     @abstractmethod
     def add_trade(self, trade: Trade) -> None:
-        """Add or update a trade."""
+        pass
 
     @abstractmethod
     def query_trades(
             self, filters: Dict[str, Any] = None, page: int = 1, per_page: int = 100, sort_by: str = "invest_time"
     ) -> Tuple[List[Trade], int]:
-        """Query trades with pagination and filters."""
+        pass
 
     @abstractmethod
     def load_journal(self) -> List[Trade]:
-        """Load all trades."""
+        pass
 
     @abstractmethod
     def save_history(self, trades: List[Trade], timestamp: datetime) -> int:
-        """Save history snapshot."""
+        pass
 
     @abstractmethod
     def load_history(self, history_id: Optional[int] = None) -> Dict[int, Dict[str, Any]]:
-        """Load history entries."""
+        pass
 
 class SQLAlchemyRepository(Repository):
-    """SQLAlchemy implementation of Repository."""
-
     def __init__(self, config: Config):
         self.engine = create_engine(config.storage.url, echo=config.app.debug)
-        self.SessionLocal = sessionmaker(bind=self.engine)
-        Base.metadata.create_all(self.engine)  # Create tables if missing
+        SessionLocal = sessionmaker(bind=self.engine)
+        Base.metadata.create_all(self.engine)
+        self.session_maker = SessionLocal
         self.config = config
-        self._load_plugin_if_needed()
-
-    def _load_plugin_if_needed(self):
-        plugin_path = self.config.storage.plugin
-        if plugin_path:
-            # Stub: Load custom repo subclass, e.g., exec(compile(open(plugin_path).read(), plugin_path, 'exec')) or importlib
-            logger.warning("plugin/load: {}", plugin_path)
-            # For now, assume subclass replaces self if needed; extend via inheritance
+        logger.info("storage/init: url={}", config.storage.url)
 
     def _get_session(self):
-        return self.SessionLocal()
+        return self.session_maker()
 
     def add_trade(self, trade: Trade) -> None:
         session = self._get_session()
         try:
             db_trade = TradeTable(**trade.to_dict())
-            session.merge(db_trade)  # Update if exists
+            session.merge(db_trade)
             session.commit()
             logger.debug("trade/add: id={}", db_trade.id)
         except Exception as e:
@@ -68,34 +58,37 @@ class SQLAlchemyRepository(Repository):
             session.close()
 
     def query_trades(
-            self, filters: Dict[str, Any] = None, page: int = 1, per_page: int = 100, sort_by: str = "invest_time desc"
+            self, filters: Dict[str, Any] = None, page: int = 1, per_page: int = 100, sort_by: str = "invest_time"
     ) -> Tuple[List[Trade], int]:
         session = self._get_session()
         try:
             query = session.query(TradeTable)
             if filters:
-                # Replicate scopes/quick_search: e.g., if "cat" in filters, query.filter(TradeTable.cat == filters["cat"])
                 for key, val in filters.items():
                     if key == "cat":
-                        query = query.filter(getattr(TradeTable, key) == val)
-                    elif key == "symbol":
-                        query = query.filter(TradeTable.symbol.ilike(f"%{val}%"))
-                    # Add more as per existing scopes_x_func
+                        query = query.filter(TradeTable.cat == val)
+                    elif key == "mark":
+                        query = query.filter(TradeTable.mark == 1 if val else 0)
+                    # Replicate scopes: e.g., deposits 'd', payouts 'p', etc.
+                    elif key == "dividend":
+                        query = query.filter(TradeTable.dividend == val)
+                    elif key in ["symbol", "name"]:
+                        query = query.filter(getattr(TradeTable, key).ilike(f"%{val}%"))
             total = query.count()
-            query = query.order_by(text(sort_by)).limit(per_page).offset((page - 1) * per_page)
-            trades = [Trade(**{c.name: getattr(row, c.name) for c in row.__table__.columns}) for row in query.all()]
-            logger.debug("query/trades: page={} count={}", page, len(trades))
+            query = query.order_by(text(f"{sort_by} desc")).limit(per_page).offset((page - 1) * per_page)
+            db_trades = query.all()
+            trades = []
+            for db_trade in db_trades:
+                trade_dict = {c.name: getattr(db_trade, c.name) for c in db_trade.__table__.columns}
+                trades.append(Trade(**trade_dict))
             return trades, total
         finally:
             session.close()
 
     def load_journal(self) -> List[Trade]:
-        session = self._get_session()
-        try:
-            trades = session.query(TradeTable).all()
-            return [Trade(**{c.name: getattr(t, c.name) for c in t.__table__.columns}) for t in trades]
-        finally:
-            session.close()
+        _, total = self.query_trades(page=1, per_page=0)  # Get all
+        trades, _ = self.query_trades(page=1, per_page=total)
+        return trades
 
     def save_history(self, trades: List[Trade], timestamp: datetime) -> int:
         session = self._get_session()
@@ -116,9 +109,9 @@ class SQLAlchemyRepository(Repository):
         session = self._get_session()
         try:
             if history_id:
-                hist = session.query(History).get(history_id)
-                if hist:
-                    return {hist.id: {"time": hist.timestamp, "data": hist.data}}
+                history = session.query(History).get(history_id)
+                if history:
+                    return {history.id: {"time": history.timestamp, "data": history.data}}
                 return {}
             histories = session.query(History).order_by(History.timestamp.desc()).all()
             return {h.id: {"time": h.timestamp, "data": h.data} for h in histories}

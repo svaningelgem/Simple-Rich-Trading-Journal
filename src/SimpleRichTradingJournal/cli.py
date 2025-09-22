@@ -2,121 +2,129 @@ import click
 from pathlib import Path
 from datetime import datetime
 from logprise import logger
-from sqlalchemy import text
+import pickle
 from ..config.loader import load_config
 from ..config.models import Config
 from ..storage.repository import SQLAlchemyRepository
 from ..storage.models import Trade
-from ..core.calc import Calc
-import pickle  # For legacy migration only
+from ..core.utils import datetime_from_tradetimeformat
+from ..main import run_app
 
 @click.group()
 def cli():
-    """SRTJ CLI."""
     pass
 
 @cli.command()
-@click.option("--config", default="config.yaml")
-def run(config: str):
-    """Run the application."""
-    cfg = load_config(Path(config))
-    logger.configure(
-        handlers=[{"sink": "srtj.log", "rotation": f"{cfg.logging.rotation_mb} MB", "retention": f"{cfg.logging.retention_days} days"}]
-    )
-    from .main import run_app
+@click.option("--config", "config_path", default="config.yaml")
+def run(config_path: str):
+    cfg = load_config(Path(config_path))
+    logger.configure(handlers=[{"sink": "srtj.log", "rotation": f"{cfg.logging.rotation_mb} MB", "retention": f"{cfg.logging.retention_days} days"}])
     run_app(cfg)
 
 @cli.command()
-@click.option("--config", default="config.yaml")
-@click.option("--from-profile", default=None, help="Profile to migrate from")
-def migrate(config: str, from_profile: Optional[str]):
-    """Migrate pickle to SQLAlchemy DB."""
-    cfg = load_config(Path(config))
-    logger.configure(...)  # Same as above
+@click.option("--config", "config_path", default="config.yaml")
+def migrate(config_path: str):
+    cfg = load_config(Path(config_path))
+    logger.configure(handlers=[{"sink": "srtj.log", "rotation": f"{cfg.logging.rotation_mb} MB", "retention": f"{cfg.logging.retention_days} days"}])
     repo = SQLAlchemyRepository(cfg)
     profiles_home = Path.home() / cfg.profiles.home_folder
-    journal_path = profiles_home / (from_profile or "") / "journal.pkl"
-    history_path = profiles_home / (from_profile or "") / "history.pkl"
+    journal_path = profiles_home / "journal.pkl"
+    history_path = profiles_home / "history.pkl"
 
     if not journal_path.exists():
-        logger.info("migration/skip: no pickle found")
+        logger.info("migration/skip: pickle not found")
         return
 
-    # Load pickle legacy
     with open(journal_path, "rb") as f:
-        trades_data = pickle.load(f)
+        journal_data = pickle.load(f)
     with open(history_path, "rb") as f:
         history_data = pickle.load(f)
 
-    # Transform to Trade
+    # Transform trades
     trades = []
-    for data in trades_data:
+    for data in journal_data:
         try:
             trade = Trade(
-                invest_time=datetime_from_tradetimeformat(data.get("InvestTime", "")),
-                invest_amount=data.get("InvestAmount"),
-                # Map all fields...
-                cat=data.get("cat", "")
+                cat=data.get("cat", ""),
+                mark=data.get("mark", 0),
+                name=data.get("Name", ""),
+                symbol=data.get("Symbol", ""),
+                isin=data.get("ISIN", ""),
+                type=data.get("Type", ""),
+                short=bool(data.get("Short", False)),
+                sector=data.get("Sector", ""),
+                category=data.get("Category", ""),
+                rating=data.get("Rating"),
+                n=data.get("n", 0),
+                invest_time=data.get("InvestTime", ""),
+                invest_amount=data.get("InvestAmount", 0),
+                invest_course=data.get("InvestCourse", 0),
+                take_time=data.get("TakeTime", ""),
+                take_amount=data.get("TakeAmount"),
+                take_course=data.get("TakeCourse"),
+                itc=data.get("ITC"),
+                dividend=bool(data.get("Dividend", False)),
+                note=data.get("Note", ""),
+                hypotheses=data.get("Hypotheses", "")
             )
             trades.append(trade)
-        except ValueError:
-            logger.warning("migration/skip-invalid: {}", data)
+        except Exception as e:
+            logger.warning("migration/invalid-trade: {} - {}", data, e)
 
-    # Check idempotent
-    current_count, _ = repo.query_trades()
-    if current_count > 0:
-        logger.info("migration/skip: DB not empty")
+    # Idempotent check
+    _, db_count = repo.query_trades(per_page=0)
+    if db_count > 0:
+        logger.info("migration/skip: DB populated")
         return
 
     # Bulk add
     for trade in trades:
         repo.add_trade(trade)
 
-    # History: Save as JSON
+    # History
     for hid, hdata in history_data.items():
-        repo.save_history([Trade(**td) for td in hdata["data"]], hdata["time"])
+        ts = datetime.fromtimestamp(hdata["time"])
+        h_trades = [Trade(**td) for td in hdata["data"]]
+        repo.save_history(h_trades, ts)
 
-    # Backup and delete pickle
+    # Backup
     trash = profiles_home / "trash"
     trash.mkdir(exist_ok=True)
-    journal_path.rename(trash / journal_path.name)
-    logger.info("migration/done: {} trades", len(trades))
+    journal_path.replace(trash / journal_path.name)
+    history_path.replace(trash / history_path.name)
+    logger.info("migration/complete: {} trades", len(trades))
 
 @cli.command()
-@click.option("--config", default="config.yaml")
-def demo(config: str):
-    """Initialize demo data and run app."""
-    cfg = load_config(Path(config))
-    logger.configure(...)  # Same
+@click.option("--config", "config_path", default="config.yaml")
+def demo(config_path: str):
+    cfg = load_config(Path(config_path))
+    logger.configure(handlers=[{"sink": "srtj.log", "rotation": f"{cfg.logging.rotation_mb} MB", "retention": f"{cfg.logging.retention_days} days"}])
     repo = SQLAlchemyRepository(cfg)
 
-    # Create tables if needed (already in init)
-
-    # Demo SQL inserts (embedded; could load from init_demo.sql)
     session = repo._get_session()
     try:
-        # Sample trades: deposits, payouts, open/fin
         demo_sql = """
-                   INSERT INTO trades (invest_time, invest_amount, name, symbol, cat) VALUES
-                                                                                          ('2023-01-01 00:00:00', 1000.0, 'Deposit', '', 'd'),
-                                                                                          ('2023-02-01 00:00:00', -500.0, 'Payout', '', 'p'),
-                                                                                          ('2023-03-01 00:00:00', 200.0, 'AAPL', 'AAPL', 'to'),
-                                                                                          ('2023-04-01 00:00:00', 250.0, 'AAPL', 'AAPL', 'tf');  -- Closed trade \
+                   INSERT INTO trades (cat, name, symbol, invest_time, invest_amount, n) VALUES
+                                                                                             ('d', 'Initial Deposit', '', '2023-01-01 09:00:00', 10000.0, 1),
+                                                                                             ('to', 'AAPL Open', 'AAPL', '2023-02-01 10:00:00', 5000.0, 10),
+                                                                                             ('tf', 'AAPL Close', 'AAPL', '2023-02-01 10:00:00', 5500.0, 10),
+                                                                                             ('p', 'Payout', '', '2023-03-01 11:00:00', -2000.0, 1),
+                                                                                             ('v', 'Dividend', 'AAPL', '2023-04-01 12:00:00', 100.0, 1),
+                                                                                             ('i', 'ITC', '', '2023-05-01 13:00:00', -50.0, 1); \
                    """
         session.execute(text(demo_sql))
         session.commit()
 
-        # History entry
+        trades = repo.load_journal()
         now = datetime.now()
-        demo_trades = repo.load_journal()  # After inserts
-        repo.save_history(demo_trades, now)
+        repo.save_history(trades, now)
 
-        logger.info("demo/init: 4 sample trades added")
+        logger.info("demo/init: added sample data")
+    except Exception as e:
+        logger.error("demo/fail: {}", e)
     finally:
         session.close()
 
-    # Run app
-    from .main import run_app
     run_app(cfg)
 
 if __name__ == "__main__":

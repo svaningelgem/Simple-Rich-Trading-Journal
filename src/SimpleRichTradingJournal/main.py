@@ -1,48 +1,88 @@
-from dash import Dash, html, callback, Output, Input
-from dash_ag_grid import AgGrid
-import dash
+from dash import Dash
 from logprise import logger
 from .config.models import Config
 from .storage.repository import SQLAlchemyRepository
-from .ui.layouts import LAYOUT
-from .core.calc import Calc
+from .ui.layout import create_layout
+from .core.calc import LogCalc
 
 def run_app(config: Config):
-    """Initialize and run Dash app."""
-    logger.configure(
-        handlers=[{"sink": "srtj.log", "rotation": f"{config.logging.rotation_mb} MB", "retention": f"{config.logging.retention_days} days"}]
-    )
     repo = SQLAlchemyRepository(config)
+    trades = repo.load_journal()
+    lc = LogCalc(trades, config)
 
-    app = Dash(__name__, title=config.app.host, debug=config.app.debug)
-    app.layout = LAYOUT(config, repo)
+    app = Dash(__name__, title="Simple Rich Trading Journal", debug=config.app.debug, suppress_callback_exceptions=True)
+    app.layout = create_layout(config, lc, repo)
 
-    # Consolidated callback example (reduce bloat: one for updates)
-    @callback(
+    # Core update callback, replicate courseupdate [21]
+    from dash.dependencies import Input, Output, State
+    @app.callback(
         Output("logElement", "rowData"),
+        Output("summary_footer", "children"),
+        Output("balance_content", "children"),
+        # Add outputs for graphs, etc.
         Input("update_interval_trigger", "n_clicks"),
-        # States for filters, page, etc.
+        State("scopes_check", "value"),
+        State("daterange", "start_date"),
+        # ... all states from original
     )
-    def update_log(n_clicks, filters, page):
-        trades, total = repo.query_trades(filters, page, config.ui.pagination.per_page)
-        # Format for view: e.g., holdtime = durationformat((t.take_time - t.invest_time).total_seconds() / 86400, config) if t.take_time else None
-        formatted = [
+    def update_all(n, scopes, start, end, with_open, size, steps, trailing_frame, trailing_interval, range_, hypothesis_per, drag_style, drag_event, stats_style, balance_style, t_trigger, c_trigger, y_trigger, q_trigger, scope_button, drag_event2, footer_style, group_checks):
+        if n is None:
+            return dash.no_update, dash.no_update, dash.no_update
+        # Update trades from repo
+        trades = repo.load_journal()
+        lc.trades = list(lc.update_course())
+        lc._calc_all()
+        # Filter by scopes/dates
+        if scopes:
+            filters = {"cat": scopes[0]}  # Simplify, expand for multiple
+            filtered_trades, _ = repo.query_trades(filters)
+            lc = LogCalc(filtered_trades, config)
+        # Format rowData for grid
+        row_data = [
             {
                 **t.to_dict(),
-                "holdtime": durationformat(...) if ... else None,  # View layer
-                "profit": Calc.calculate_profit(t),  # Pure func
+                "HoldTime": durationformat((datetime_from_tradetimeformat(t.take_time) - datetime_from_tradetimeformat(t.invest_time)).total_seconds() if t.take_time else 0, config),
+                "Profit": f"{t.take_amount - t.invest_amount:,.2f}" if t.take_amount else "",
+                # Format all view fields
             }
-            for t in trades
+            for t in lc.trades
         ]
-        return formatted
+        # Footer from lc
+        footer_children = html.Table(  # Replicate footer [15]
+            html.Tbody([
+                html.Tr([html.Th("Positions"), html.Td(lc.n_trades_open), html.Td(lc.n_trades_open + lc.n_trades_fin)]),
+                # Full table from original
+            ])
+        )
+        # Balance content from records [7]
+        records = build_balance_records(config)
+        balance_children = html.Div([html.P(key + ": " + records[key](lc)) for key in records])
+        return row_data, footer_children, balance_children
 
-    # More callbacks: scopes, search, etc., thin wrappers on repo/Calc
-    # E.g., for metrics footer:
-    @callback(Output("footer", "children"), Input("logElement", "rowData"))
-    def update_footer(row_data):
-        trades = [Trade(**r) for r in row_data]  # From formatted back to model
-        metrics = Calc.calculate_metrics(trades, config=config)
-        # Format numbers for view: f"{metrics.summary_value:,.2f}"
-        return html.Div(f"Total: {metrics.summary_value:,.2f}")  # Replicate footer
+    # Add other callbacks: scopes [24], onoff [22], openmodal [23], columnstate [20], autocomplete [18], etc.
+    # For example, scopes callback
+    @app.callback(
+        Output("logElement", "dashGridOptions"),
+        Input("scopes_check", "value")
+    )
+    def update_scopes(scopes):
+        if not scopes:
+            return {"isExternalFilterPresent": {"function": "false"}, "doesExternalFilterPass": {"function": "true"}}
+        filter_func = " || ".join([f"params.data.cat == '{s}'" for s in scopes])
+        return {"isExternalFilterPresent": {"function": "true"}, "doesExternalFilterPass": {"function": filter_func}}
 
-    app.run(host=config.app.host, port=config.app.port, debug=config.app.debug)
+    # History callback [10]
+    @app.callback(
+        Output("history_list", "options"),
+        Input("history_modal_trigger", "n_clicks")
+    )
+    def update_history(n):
+        repo = SQLAlchemyRepository(config)  # Global or context
+        history = repo.load_history()
+        options = [{"label": v["time"].strftime(config.ui.time_format_history), "value": k} for k, v in history.items()]
+        return options
+
+    # Run
+    if config.app.quiet:
+        logger.remove()
+    app.run(host=config.app.host, port=config.app.port, debug=config.app.debug, use_reloader=not config.app.administrative)
