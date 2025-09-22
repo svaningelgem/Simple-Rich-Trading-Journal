@@ -1,172 +1,171 @@
-#####################################################
+# Blank Theme Configuration
 # https://dash.plotly.com/dash-ag-grid/styling-themes
-table_theme = "ag-theme-alpine"
-######################################################
+table_theme: "ag-theme-alpine"
 
-# main
-table_bg_main = "white"
-table_bg_2 = "white"
-table_bg_header = "white"
-table_fg_main = "black"
-table_fg_header = "black"
-table_sep = "silver"
+# Main colors
+main:
+    table_bg_main: "white"
+    table_bg_2: "white"
+    table_bg_header: "white"
+    table_fg_main: "black"
+    table_fg_header: "black"
+    table_sep: "silver"
 
-# /log/row mark
-row_mark = ""
+# Row marking
+row_mark: ""
 
-# /log/alt colors
-alt_neg = ""
-alt_pos = ""
+# Alt colors
+alt:
+    neg: ""
+    pos: ""
 
-# /log/columns
-col_name = None
-col_symbol = None
-col_isin = None
-col_type = None
-col_short = None
-col_sector = None
-col_category = None
-col_rating = None
-col_n = None
-col_invest = None
-col_take = None
-col_itc = None
-col_result = None
-col_holdtime = None
-col_note = None
-col_hypotheses = None
+# Column backgrounds
+columns:
+    name: null
+    symbol: null
+    isin: null
+    type: null
+    short: null
+    sector: null
+    category: null
+    rating: null
+    n: null
+    invest: null
+    take: null
+    itc: null
+    result: null
+    holdtime: null
+    note: null
+    hypotheses: null
 
-# /log/record/special labels and separators
-record_deposit = ""
-record_payout = ""
-record_itc = ""
-record_dividend = ""
-record_opentrade = ""
+# Record type labels
+records:
+    deposit: ""
+    payout: ""
+    itc: ""
+    dividend: ""
+    opentrade: ""
 
-# /log/record/result highlight
-cell_posvalue = None
-cell_negvalue = None
+# Cell value highlighting
+cell_values:
+    pos: null
+    neg: null
 
-# /log/record/other markings
-mark_note = ""
-mark_gray = ""
-mark_error = ""
-mark_undefined = ""
+# Other markings
+marks:
+    note: ""
+    gray: ""
+    error: ""
+    undefined: ""
 
-# /log/record/rating
-rating_scale = [
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-]
-alt_rating_scale = [
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-]
+# Rating scales
+rating_scale:
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
 
-# /statistics/figure/main
-figure_plot = None
-figure_paper = None
-figure_font = None
-figure_grid = None
-figure_spike = None
+alt_rating_scale:
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
 
-# /statistics/figure/traces
-trace_profit = None
-trace_summary = None
-trace_current_performance = None
-trace_dripping_performance = None
-trace_summary_rate = None
-trace_deposit = None
-trace_payout = None
-trace_money = None
-trace_trade_sum_invest = None
-trace_trade_sum_take = None
-trace_trade_performance = None
-trace_profit_per_day_avg = None
-trace_performance_per_day_avg = None
-trace_trade_sum_invest_trailing = None
-trace_trade_sum_take_trailing = None
-trace_trade_performance_trailing = None
-trace_profit_per_day_avg_trailing = None
-trace_performance_per_day_avg_trailing = None
-trace_activity = None
-trace_holdtime_avg = None
+# Statistics/Figure colors
+figures:
+    plot: null
+    paper: null
+    font: null
+    grid: null
+    spike: null
 
+    traces:
+        profit: null
+        summary: null
+        current_performance: null
+        dripping_performance: null
+        summary_rate: null
+        deposit: null
+        payout: null
+        money: null
+        trade_sum_invest: null
+        trade_sum_take: null
+        trade_performance: null
+        profit_per_day_avg: null
+        performance_per_day_avg: null
+        trade_sum_invest_trailing: null
+        trade_sum_take_trailing: null
+        trade_performance_trailing: null
+        profit_per_day_avg_trailing: null
+        performance_per_day_avg_trailing: null
+        activity: null
+        holdtime_avg: null
 
-class color_palette_positions:
+    shapes:
+        last_calc: null
 
-    @staticmethod
-    def copy():
-        return color_palette_positions
+# Position color palette (returns null for copy/pop operations)
+color_palette_positions: []
 
-    @staticmethod
-    def pop(_):
-        return None
+# Footer/buttons
+footer:
+    statistics_button_border: ""
+    statistics_button_shadow: ""
+    balance_button_border: ""
+    balance_button_shadow: ""
+    sig1: ""
+    sig2: ""
 
+# Top bar
+topbar:
+    onoff_bg: ""
+    onoff_fg: ""
+    by_index_off: ""
 
-# /statistics/figure/shape
-shape_last_calc = None
+# Balance sheet
+balance:
+    col1_sep: ""
+    col_year: ""
+    header_year: ""
+    quarter_sep: ""
+    current_sep: ""
+    col_t52: ""
+    header_t52: ""
+    col_current: ""
+    header_current: ""
+    cell_active_bg: ""
+    cell_selected_bg: ""
+    hover_bg: ""
 
-# /footer/open sidebar
-statistics_button_border = ""
-statistics_button_shadow = ""
-balance_button_border = ""
-balance_button_shadow = ""
+# Note interface
+notepaper:
+    bg: "white"
+    def_transparency: ""
+    fg: "black"
+    border: ""
+    link: "blue"
 
-# /footer/life signal
-footer_sig1 = ""
-footer_sig2 = ""
+notebook:
+    bg: ""
+    def_transparency: ""
+    gutter_bg: ""
+    def_gutter_transparency: ""
 
-# /top bar
-top_onoff_bg = ""
-top_onoff_fg = ""
-top_by_index_off = ""
-
-# /balance
-sheet_col1_sep = ""
-sheet_col_year = ""
-sheet_header_year = ""
-sheet_quarter_sep = ""
-sheet_current_sep = ""
-sheet_col_t52 = ""
-sheet_header_t52 = ""
-sheet_col_current = ""
-sheet_header_current = ""
-sheet_cell_active_bg = ""
-sheet_cell_selected_bg = ""
-sheet_hover_bg = ""
-
-# /notepaper
-notepaper_bg = "white"
-notepaper_def_transparency = ""
-notepaper_fg = "black"
-notepaper_border = ""
-notepaper_link = "blue"
-
-# /noteeditor
-notebook_bg = ""
-notebook_def_transparency = ""
-notebook_gutter_bg = ""
-notebook_def_gutter_transparency = ""
-
-# /noteeditor/dialog
-noteeditor_dialog_fg = ""
-noteeditor_dialog_bg = ""
-noteeditor_dialog_border = ""
-noteeditor_dialog_ignore = ""
-noteeditor_dialog_rename = ""
-noteeditor_dialog_overwrite = ""
+# Note editor dialog
+noteeditor_dialog:
+    fg: ""
+    bg: ""
+    border: ""
+    ignore: ""
+    rename: ""
+    overwrite: ""

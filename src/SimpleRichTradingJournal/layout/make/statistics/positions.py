@@ -193,7 +193,7 @@ class _Positions:
             if self.show_all:
                 maxdepth = None
             else:
-                maxdepth = __env__.statisticsSunMaxDepth
+                maxdepth = config.statistics.sun_max_depth
 
             self.open_figure = go.Figure(
                 go.Sunburst(

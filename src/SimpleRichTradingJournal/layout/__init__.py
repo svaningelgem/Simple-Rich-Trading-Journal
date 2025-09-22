@@ -5,6 +5,7 @@ from config import styles
 from . import header, history, statistics, balance, autocomplet, note, about, exiting, modal
 from . import make
 from .log import tradinglog
+from ..config import config
 
 LAYOUT = html.Div(
     [
@@ -91,7 +92,7 @@ LAYOUT = html.Div(
                                     id="gridSplitter",
                                     style={
                                               "height": "inherit",
-                                          } | (styles.misc.balance_split_handle if __env__.sideInitBalance else styles.misc.statistics_split_handle),
+                                          } | (styles.misc.balance_split_handle if config.ui.grid.side_init_balance else styles.misc.statistics_split_handle),
                                     className="noselect"
                                 ),
                                 c_2 := html.Div(
@@ -152,8 +153,8 @@ LAYOUT = html.Div(
             id="bottomBar",
             style={
                 "position": "absolute",
-                "bottom": __env__.bottomBarDistanceBottom,
-                "right": __env__.bottomBarDistanceRight,
+                "bottom": config.ui.grid.bottom_bar_distance_bottom,
+                "right": config.ui.grid.bottom_bar_distance_right,
                 "width": "100%",
                 "zIndex": 1,
                 "display": "none"

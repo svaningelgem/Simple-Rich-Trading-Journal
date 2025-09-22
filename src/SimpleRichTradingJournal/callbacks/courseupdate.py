@@ -37,7 +37,7 @@ def toggle(
     return True, o_update_interval_trigger_n_clicks, o_update_interval_button_style
 
 
-if __env__.coursePluginUpdateInterval:
+if config.plugins.course_update_interval:
     obj_fin = Output(layout.header.update_interval, "disabled", allow_duplicate=True)
     o_style_fin = no_update
 else:

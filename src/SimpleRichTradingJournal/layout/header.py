@@ -3,6 +3,8 @@ from dash import html, dcc
 from config import styles, imgs
 import __env__
 
+from src.SimpleRichTradingJournal.config import config
+
 _Deposits = "\u2007Deposits \u2007\u2007"
 _Payouts = "\u2007Payouts \u2007\u2007"
 _Fin = "\u2007Fin Trades \u2007\u2007"
@@ -150,7 +152,7 @@ statistics_button = html.Button(
 balance_button = html.Button(
     "BALANCE",
     id="balance_button_",
-    n_clicks=__env__.sideInitBalanceValue,
+    n_clicks=config.ui.grid.side_init_balance_value,
     style={
         "display": "inline-block",
         "margin": "7px",
@@ -165,7 +167,7 @@ daterange = dcc.DatePickerRange(
     display_format=__env__.timeFormatDaterange,
     start_date_placeholder_text=__env__.timeFormatDaterange,
     end_date_placeholder_text=__env__.timeFormatDaterange,
-    first_day_of_week=__env__.dateFormatFirstDayOfWeek,
+    first_day_of_week=config.ui.date_format_first_day_of_week,
     number_of_months_shown=6,
     day_size=20,
     id="daterange_",
@@ -176,7 +178,7 @@ daterange = dcc.DatePickerRange(
 )
 index_by_button = html.Button(
     "Index by ...",
-    n_clicks=__env__.indexByTakeTime,
+    n_clicks=config.scope.index_by_take_time,
     id="index_by_button_",
     style={
         "display": "inline-block",
@@ -189,7 +191,7 @@ index_by_button = html.Button(
 )
 scope_by_button = html.Button(
     "Scope by ...",
-    n_clicks=__env__.scopeByIndex,
+    n_clicks=config.scope.scope_by_index,
     id="scope_by_button_",
     style={
         "display": "inline-block",
@@ -202,7 +204,7 @@ scope_by_button = html.Button(
 )
 with_open_button = html.Button(
     "with open",
-    n_clicks=__env__.calcWithOpens,
+    n_clicks=config.scope.calc_with_opens,
     id="with_open_button_",
     style={
         "display": "inline-block",
@@ -213,9 +215,9 @@ with_open_button = html.Button(
         "borderRadius": "15px",
     }
 )
-with_open_trigger = html.Div(id="with_open_trigger_", n_clicks=__env__.calcWithOpens, style={"display": "none"})
+with_open_trigger = html.Div(id="with_open_trigger_", n_clicks=config.scope.calc_with_opens, style={"display": "none"})
 
-if __env__.coursePluginUpdateInterval and __env__.coursePluginUpdateIntervalOn:
+if config.plugins.course_update_interval and config.plugins.course_update_interval_on:
     _interval_n = 1
     style_state = styles.misc.interval_on
 else:
@@ -234,5 +236,5 @@ update_interval_button = html.Button(
         "borderRadius": "15px",
     } | style_state,
 )
-update_interval = dcc.Interval(id="update_interval_", interval=__env__.coursePluginUpdateIntervalMs, disabled=(not __env__.coursePluginUpdateInterval) or (not __env__.coursePluginUpdateIntervalOn))
+update_interval = dcc.Interval(id="update_interval_", interval=config.plugins.course_update_interval_ms, disabled=(not config.plugins.course_update_interval) or (not config.plugins.course_update_interval_on))
 update_interval_trigger = html.Div(id="update_interval_trigger_", n_clicks=_interval_n, style={"display": "none"})

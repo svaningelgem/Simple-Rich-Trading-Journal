@@ -12,7 +12,9 @@ import __env__
 import layout
 from config import msg
 
-if __env__.noteCellVariableFormatter:
+from SimpleRichTradingJournal.config import config
+
+if config.notes.cell_variable_formatter:
     from string import Formatter
 
     class _Formatter(Formatter):
@@ -74,7 +76,7 @@ if __env__.noteCellVariableFormatter:
                 "Profit/Day": None,
               } | __row
         )
-    if __env__.noteMathJax and __env__.noteMathJaxMasker:
+    if config.notes.mathjax and config.notes.mathjax_masker:
 
         def content(obj):
             _content = sub("\\$\\$.*?\\$\\$", lambda m: m.group().replace("{", "{{").replace("}", "}}"), obj["content"], flags=DOTALL)
@@ -89,7 +91,7 @@ else:
         return obj["content"]
 
 
-if __env__.noteUnifying:
+if config.notes.unifying:
 
     @callback(
         Output(layout.note.notepaper, "children"),
@@ -135,7 +137,7 @@ def make_filelink(
     if drop_obj["file"] == "file":
         link_name = quote(drop_obj["name"])
         if drop_obj["type"].startswith("image/"):
-            if __env__.noteFileDropClonerImgAltName:
+            if config.notes.file_drop_cloner_img_alt_name:
                 name = drop_obj["name"]
             else:
                 name = ""

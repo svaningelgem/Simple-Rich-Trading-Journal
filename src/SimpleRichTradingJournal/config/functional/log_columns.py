@@ -1,6 +1,5 @@
 import __env__
-from config.styles.log import *
-import config.loader as config
+from .. import config
 
 
 dataTypeDefinitions = {
@@ -137,38 +136,38 @@ Name["cellStyle"]["styleConditions"] = [
 
 Symbol = {
     'cellStyle': {} | symbol,
-    "width": __env__.logColWidths[1],
-    "hide": not __env__.logColWidths[1]
+    "width": config.log.col_widths[1],
+    "hide": not config.log.col_widths[1]
 }
 
 ISIN = {
     'cellStyle': {} | isin,
-    "width": __env__.logColWidths[2],
-    "hide": not __env__.logColWidths[2]
+    "width": config.log.col_widths[2],
+    "hide": not config.log.col_widths[2]
 }
 
 Type = {
     'cellStyle': {} | type,
-    "width": __env__.logColWidths[3],
-    "hide": not __env__.logColWidths[3]
+    "width": config.log.col_widths[3],
+    "hide": not config.log.col_widths[3]
 }
 
 Short = {
     'cellStyle': {} | short,
-    "width": __env__.logColWidths[4],
-    "hide": not __env__.logColWidths[4]
+    "width": config.log.col_widths[4],
+    "hide": not config.log.col_widths[4]
 }
 
 Sector = {
     'cellStyle': {} | sector,
-    "width": __env__.logColWidths[5],
-    "hide": not __env__.logColWidths[5]
+    "width": config.log.col_widths[5],
+    "hide": not config.log.col_widths[5]
 }
 
 Category = {
     'cellStyle': {} | sector,
-    "width": __env__.logColWidths[6],
-    "hide": not __env__.logColWidths[6]
+    "width": config.log.col_widths[6],
+    "hide": not config.log.col_widths[6]
 }
 
 Rating = {
@@ -213,8 +212,8 @@ Rating = {
         ],
         "defaultStyle": rating,
     },
-    "width": __env__.logColWidths[7],
-    "hide": not __env__.logColWidths[7]
+    "width": config.log.col_widths[7],
+    "hide": not config.log.col_widths[7]
 }
 
 N = {
@@ -231,8 +230,8 @@ N = {
         ],
         "defaultStyle": n_default,
     },
-    "width": __env__.logColWidths[8],
-    "hide": not __env__.logColWidths[8]
+    "width": config.log.col_widths[8],
+    "hide": not config.log.col_widths[8]
 }
 
 InvestTime = {
@@ -265,8 +264,8 @@ InvestTime = {
         ],
         "defaultStyle": invest_col,
     },
-    "width": __env__.logColWidths[9],
-    "hide": not __env__.logColWidths[9]
+    "width": config.log.col_widths[9],
+    "hide": not config.log.col_widths[9]
 }
 
 InvestAmount = {
@@ -279,13 +278,13 @@ InvestAmount = {
         ] + InvestTime["cellStyle"]["styleConditions"],
         "defaultStyle": invest_col,
     },
-    "width": __env__.logColWidths[10],
-    "hide": not __env__.logColWidths[10]
+    "width": config.log.col_widths[10],
+    "hide": not config.log.col_widths[10]
 } | _calcCell
 
 InvestCourse = InvestTime | {
-    "width": __env__.logColWidths[11],
-    "hide": not __env__.logColWidths[11],
+    "width": config.log.col_widths[11],
+    "hide": not config.log.col_widths[11],
 } | _calcCell
 
 TakeTime = {
@@ -318,8 +317,8 @@ TakeTime = {
         ],
         "defaultStyle": take_col,
     },
-    "width": __env__.logColWidths[12],
-    "hide": not __env__.logColWidths[12]
+    "width": config.log.col_widths[12],
+    "hide": not config.log.col_widths[12]
 }
 
 TakeAmount = {
@@ -336,13 +335,13 @@ TakeAmount = {
         ] + TakeTime["cellStyle"]["styleConditions"],
         "defaultStyle": take_col,
     },
-    "width": __env__.logColWidths[13],
-    "hide": not __env__.logColWidths[13]
+    "width": config.log.col_widths[13],
+    "hide": not config.log.col_widths[13]
 } | __env__.cellRendererChangeTakeAmount | _calcCell
 
 TakeCourse = TakeTime | {
-    "width": __env__.logColWidths[14],
-    "hide": not __env__.logColWidths[14],
+    "width": config.log.col_widths[14],
+    "hide": not config.log.col_widths[14],
 } | __env__.cellRendererChangeTakeCourse | _calcCell
 
 
@@ -372,8 +371,8 @@ Itc = {
         ],
         "defaultStyle": itc_col,
     },
-    "width": __env__.logColWidths[15],
-    "hide": not __env__.logColWidths[15]
+    "width": config.log.col_widths[15],
+    "hide": not config.log.col_widths[15]
 } | _calcCell
 
 Performance = {
@@ -406,8 +405,8 @@ Performance = {
         ],
         "defaultStyle": performance_neg,
     },
-    "width": __env__.logColWidths[16],
-    "hide": not __env__.logColWidths[16]
+    "width": config.log.col_widths[16],
+    "hide": not config.log.col_widths[16]
 } | __env__.cellRendererChangePerformance
 
 Profit = {
@@ -428,8 +427,8 @@ Profit = {
         ],
         "defaultStyle": profit_neg,
     },
-    "width": __env__.logColWidths[17],
-    "hide": not __env__.logColWidths[17]
+    "width": config.log.col_widths[17],
+    "hide": not config.log.col_widths[17]
 } | __env__.cellRendererChangeProfit
 
 Dividend = {
@@ -442,20 +441,20 @@ Dividend = {
         ],
         "defaultStyle": result,
     },
-    "width": __env__.logColWidths[18],
-    "hide": not __env__.logColWidths[18]
+    "width": config.log.col_widths[18],
+    "hide": not config.log.col_widths[18]
 }
 
 Note = {
     'cellStyle': {"white-space": "pre"} | note,
-    "width": __env__.logColWidths[19],
-    "hide": not __env__.logColWidths[19]
+    "width": config.log.col_widths[19],
+    "hide": not config.log.col_widths[19]
 }
 
 HoldTime = {
     'cellStyle': holdtime,
-    "width": __env__.logColWidths[20],
-    "hide": not __env__.logColWidths[20]
+    "width": config.log.col_widths[20],
+    "hide": not config.log.col_widths[20]
 }
 
 ProfitDay = {
@@ -468,13 +467,13 @@ ProfitDay = {
         ],
         "defaultStyle": statistic_neg,
     },
-    "width": __env__.logColWidths[21],
-    "hide": not __env__.logColWidths[21]
+    "width": config.log.col_widths[21],
+    "hide": not config.log.col_widths[21]
 }
 
 PerformanceDay = ProfitDay | {
-    "width": __env__.logColWidths[22],
-    "hide": not __env__.logColWidths[22],
+    "width": config.log.col_widths[22],
+    "hide": not config.log.col_widths[22],
 }
 
 ProfitYear = {
@@ -487,11 +486,11 @@ ProfitYear = {
         ],
         "defaultStyle": statistic_neg,
     },
-    "width": __env__.logColWidths[23],
-    "hide": not __env__.logColWidths[23]
+    "width": config.log.col_widths[23],
+    "hide": not config.log.col_widths[23]
 }
 
 PerformanceYear = ProfitDay | {
-    "width": __env__.logColWidths[24],
-    "hide": not __env__.logColWidths[24],
+    "width": config.log.col_widths[24],
+    "hide": not config.log.col_widths[24],
 }

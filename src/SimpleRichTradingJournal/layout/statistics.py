@@ -4,6 +4,7 @@ import __env__
 from config import styles
 from config.functional import performance_trailing
 
+from SimpleRichTradingJournal.config import config
 
 POP = html.Div([
     html.Div([
@@ -59,21 +60,21 @@ for i in config.statistics().performance.order:
             )
         )
 
-_dragcontainer2 = [None] * len(__env__.statisticsGroupDefault)
+_dragcontainer2 = [None] * len(config.statistics.group_default)
 _dragcontainer2_unselect = list()
 _dragcontainer2_opts = (
-                           ({"label": "\u2007\u2007L/S", "value": "Short"}, __env__.logColWidths[4]),
-                           ({"label": "\u2007\u2007Type", "value": "Type"}, __env__.logColWidths[3]),
-                           ({"label": "\u2007\u2007Sector", "value": "Sector"}, __env__.logColWidths[5]),
-                           ({"label": "\u2007\u2007Category", "value": "Category"}, __env__.logColWidths[6]),
+                           ({"label": "\u2007\u2007L/S", "value": "Short"}, config.log.col_widths[4]),
+                           ({"label": "\u2007\u2007Type", "value": "Type"}, config.log.col_widths[3]),
+                           ({"label": "\u2007\u2007Sector", "value": "Sector"}, config.log.col_widths[5]),
+                           ({"label": "\u2007\u2007Category", "value": "Category"}, config.log.col_widths[6]),
                        ) + (
                            ({"label": "\u2007\u2007Symbol", "value": "Symbol"}, 1)
-                           if __env__.statisticsIdBySymbol else
+                           if config.statistics.id_by_symbol else
                            ({"label": "\u2007\u2007Name", "value": "Name"}, 1),
                        )
 _group_by_checks = list()
 
-for i, p in zip(_dragcontainer2_opts, __env__.statisticsGroupDefault):
+for i, p in zip(_dragcontainer2_opts, config.statistics.group_default):
     def rec(selected):
         check = dcc.Checklist(
             [i[0]],
@@ -131,7 +132,7 @@ group_by_settings = html.Div(
         html.Div(
             show_all := dcc.Checklist(
                 [{"label": "\u2007\u2007show all", "value": True}],
-                value=[not __env__.statisticsUseSunMaxDepth],
+                value=[not config.statistics.use_sun_max_depth],
                 id="statisticsUseSunMaxDepth_"
             ),
             style={
@@ -245,7 +246,7 @@ framing_settings = html.Div(
             [
                 performance_hypothesis_per := dcc.RadioItems(
                     ["\u2007Hypothesis/Day\u2007\u2007", "\u2007Hypothesis/Year\u2007\u2007"],
-                    value=("\u2007Hypothesis/Day\u2007\u2007" if __env__.statisticsHypothesisPerDay else "\u2007Hypothesis/Year\u2007\u2007"),
+                    value=("\u2007Hypothesis/Day\u2007\u2007" if config.statistics.performance.hypothesis_per_day else "\u2007Hypothesis/Year\u2007\u2007"),
                     inline=True,
                     id="performance_hypothesis_per_",
                 ),

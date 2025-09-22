@@ -4,6 +4,8 @@ import __env__
 import __ini__.cmdl
 from config.functional import log_columns
 
+from SimpleRichTradingJournal.config import config
+
 _default_col_def = {
     "editable": True,
     "filter": "agNumberColumnFilter",
@@ -79,11 +81,11 @@ _asset_ids = [
 ]
 
 
-_asset_ids1_ = [None] * len(__env__.logColOrderAssetId)
+_asset_ids1_ = [None] * len(config.log.col_order_asset_id)
 
-_asset_ids2_ = [None] * len(__env__.logColOrderAssetId)
+_asset_ids2_ = [None] * len(config.log.col_order_asset_id)
 
-for i, o in enumerate(__env__.logColOrderAssetId):
+for i, o in enumerate(config.log.col_order_asset_id):
     if o < 0:
         _asset_ids1_[abs(o) - 1] = _asset_ids[i] | {"pinned": "left"}
     elif o:
@@ -96,9 +98,9 @@ for _l in (_asset_ids1_, _asset_ids2_):
     except ValueError:
         pass
 
-_notes_ = [None] * len(__env__.logColOrderNote)
+_notes_ = [None] * len(config.log.col_order_note)
 
-for i, o in enumerate(__env__.logColOrderNote[:-1], 1):
+for i, o in enumerate(config.log.col_order_note[:-1], 1):
     if o:
         _notes_[o - 1] = _asset_ids[i]
 
@@ -107,7 +109,7 @@ _note = _default_col_def | {
     "filter": "agTextColumnFilter",
 } | log_columns.Note
 
-_notes_[__env__.logColOrderNote[-1] - 1] = _note
+_notes_[config.log.col_order_note[-1] - 1] = _note
 
 try:
     while True:
@@ -359,9 +361,9 @@ _columns_ = [
     },
 ]
 
-columnDefs = [_columns_[0]] + ([None] * len(__env__.logColOrder))
+columnDefs = [_columns_[0]] + ([None] * len(config.log.col_order))
 
-for i, o in enumerate(__env__.logColOrder, 1):
+for i, o in enumerate(config.log.col_order, 1):
     columnDefs[o] = _columns_[i]
 
 del _columns_

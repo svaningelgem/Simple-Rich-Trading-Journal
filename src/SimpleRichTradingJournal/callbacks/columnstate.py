@@ -3,7 +3,9 @@ from dash import callback, Output, Input, State, no_update
 import __env__
 import layout
 
-if __env__.columnStateCache:
+from ..config import config
+
+if config.log.column_state_cache:
 
     @callback(
         Output(layout.tradinglog, "columnState", allow_duplicate=True),

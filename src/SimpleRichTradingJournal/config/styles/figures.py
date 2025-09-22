@@ -1,13 +1,14 @@
 import __env__
 
+from .. import config
 
-size_open_positions = __env__.statisticsOpenPositionsGraphSize
-size_all_positions = __env__.statisticsAllPositionsGraphSize
+size_open_positions = config.statistics.graph_sizes.open_positions
+size_all_positions = config.statistics.graph_sizes.all_positions
 size_slider_kwargs_performance = dict(
-    min=500, max=6000, step=500, value=__env__.statisticsPerformanceGraphSize,
+    min=500, max=6000, step=500, value=config.statistics.performance.GraphSize,
 )
 size_slider_kwargs_pop = dict(
-    min=500, max=6000, step=500, value=__env__.statisticsPopGraphSize,
+    min=500, max=6000, step=500, value=config.statistics.graph_sizes.pop,
 )
 
 color_bg_plot = __env__.color_theme.figure_plot

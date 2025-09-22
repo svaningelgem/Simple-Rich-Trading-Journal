@@ -14,14 +14,14 @@ from dash import Dash
 
 import __ini__.cmdl
 import __ini__.logtags
-from config.loader import init_config
+from config import config
 
 __project_name__ = "Simple Rich Trading Journal"
 
 
 def run():
     if __ini__.cmdl.ADMINISTRATIVE:
-        init_config()  # Initialize config early
+        config.init_config()  # Initialize config early
         import __env__
     else:
         red = [sys.executable, __file__] + sys.argv[1:]
@@ -72,7 +72,7 @@ class Server(Process):
 
             sys.stderr = null
 
-        app.run(debug=__ini__.cmdl.FLAGS.debug, host=__env__.appHost, port=__env__.appPort)
+        app.run(debug=__ini__.cmdl.FLAGS.debug, host=config.app.host, port=config.app.port)
 
 
 def _suppress_exc(*args, **kwargs):

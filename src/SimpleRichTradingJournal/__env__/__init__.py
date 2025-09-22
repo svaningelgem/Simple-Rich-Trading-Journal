@@ -12,17 +12,16 @@ from signal import SIGTERM
 from time import time
 from urllib.parse import unquote
 from urllib.request import urlopen
-from storage import StorageFactory, StorageAdapter, StorageConfig, StorageConfigManager
-from SimpleRichTradingJournal import __version__
+
+# New config system imports
+from config.loader import init_config, get_config
+import config.loader as config
 
 import __ini__.cmdl
 import __ini__.logtags
-from config import color_theme
-from . import rconfig, plugin, _upgrade, _files
+from . import plugin, _upgrade, _files
 from .rconfig import *
 from things import make_assets
-from config.loader import init_config, get_config
-import config.loader as config
 
 
 def _upgrade_profile(
@@ -141,7 +140,7 @@ def _autoclean(journal_data):
     print(__ini__.logtags.cleaner, "load:", __file_clean_time)
     with open(__file_clean_time) as __f:
         clean_time = int(__f.read())
-    remain = (clean_time + autocleanIntervalS) - t
+    remain = (clean_time + config.maintenance.autoclean_interval_s) - t
     print(__ini__.logtags.cleaner, f"{remain=}s")
     if remain <= 0:
         with open(__file_clean_time, "w") as __f:
@@ -227,21 +226,34 @@ def _autoclean(journal_data):
             pickle.dump(color_cache, f)
 
 
+# Global variables for backward compatibility
 PROFILE: str = ""
 __profile_folder__: str = ""
-storage_config = StorageConfigManager.load_config(__profile_folder__)
-def _setup_storage():
-    from storage import StorageFactory, StorageAdapter
-    storage_config = {
-        'backend': config.storage().backend,
-        'connection_string': config.storage().connection_string,
-        'table_prefix': config.storage().table_prefix,
-        'file_path': __profile_folder__
-    }
-    return StorageAdapter(StorageFactory.create(storage_config))
-
-storage_adapter = _setup_storage()
+storage_adapter = None
 _globals = globals()
+
+
+def _initialize_config() -> None:
+    """Initialize configuration system and set up backward compatibility."""
+    global storage_adapter
+
+    try:
+        # Initialize config with profile folder
+        config.init(profile_folder=__profile_folder__ if __profile_folder__ else None)
+        print(__ini__.logtags.profile_load, "config loaded successfully")
+
+        # Set up storage adapter
+        from ..storage import StorageFactory, StorageAdapter
+        storage_config = {
+            'backend': config.storage.backend,
+            'connection_string': config.storage.connection_string,
+            'table_prefix': config.storage.table_prefix,
+            'file_path': __profile_folder__ or _files.default_install_root
+        }
+        storage_adapter = StorageAdapter(StorageFactory.create(storage_config))
+    except Exception as e:
+        print(__ini__.logtags.error, f"Config initialization failed: {e}")
+        raise
 
 
 def _load_profile(profile):
@@ -254,6 +266,8 @@ def _load_profile(profile):
         __profile_folder__ = __profiles_home__
     if not Path(__profile_folder__).exists():
         _make_profile(__profile_folder__)
+
+    # Load legacy RC files if they exist
     if (p := Path(_files.make_path(__profile_folder__, _files.file_rc))).exists():
         print(__ini__.logtags.profile_load, p)
         spec = util.spec_from_file_location("rc", p)
@@ -263,6 +277,7 @@ def _load_profile(profile):
             if attr.startswith("_"):
                 continue
             _globals[attr] = getattr(_rc, attr)
+
     if (p := Path(_files.make_path(__profile_folder__, _files.file_plugin))).exists():
         print(__ini__.logtags.profile_load, p)
         spec = util.spec_from_file_location("plugin", p)
@@ -272,19 +287,6 @@ def _load_profile(profile):
             if attr.startswith("_"):
                 continue
             setattr(plugin, attr, getattr(_plugin, attr))
-
-
-def _load_colors():
-    color_theme._load_theme(colorTheme)
-    if (p := Path(_files.make_path(__profile_folder__, _files.file_cc))).exists():
-        print(__ini__.logtags.profile_load, p)
-        spec = util.spec_from_file_location("cc", p)
-        _cc = util.module_from_spec(spec)
-        spec.loader.exec_module(_cc)
-        for attr in _cc.__dir__():
-            if attr.startswith("_"):
-                continue
-            setattr(color_theme, attr, getattr(_cc, attr))
 
 
 def _cmdline():
@@ -322,6 +324,7 @@ def _profile_list() -> list[str]:
     return [n for e in scandir(__profiles_home__) if (n := e.name).startswith(_files.profile_prefix)]
 
 
+# Initialize installation and profiles
 try:
     if __ini__.cmdl.DIRECTIVES[0] == "install":
         __ini__.cmdl.DIRECTIVES.pop(0)
@@ -341,6 +344,7 @@ try:
 except FileNotFoundError:
     _install(_files.default_install_root)
 
+# Handle upgrade commands
 try:
     if __ini__.cmdl.DIRECTIVES[0] == "upgrade":
         __ini__.cmdl.DIRECTIVES.pop(0)
@@ -385,10 +389,12 @@ try:
             print(str().join(f.read().splitlines(keepends=True)[1:]))
         exit()
     elif __ini__.cmdl.DIRECTIVES[0] == "version":
+        from SimpleRichTradingJournal import __version__
         exit(__version__)
 except IndexError:
     pass
 
+# Load profile and initialize config
 _load_profile(None)
 try:
     _load_profile(environ["SRTJ"])
@@ -396,7 +402,12 @@ except KeyError:
     pass
 _cmdline()
 
-URL = f"http://{appHost}:{appPort}"
+# Initialize configuration system
+from ..config import config
+_initialize_config()
+
+# Set up URL and other path-dependent variables
+URL = f"http://{config.app.host}:{config.app.port}"
 PONG_URL = _files.make_path(URL, _files.folder_profile_assets, _files.file_pong)
 
 
@@ -443,81 +454,85 @@ elif __ini__.cmdl.FLAGS.kill:
         print(__ini__.logtags.ping_fail, PONG_URL)
         exit(1)
 
-_load_colors()
-
+# Set up path variables based on config
 DASH_ASSETS = _files.make_path(__profile_folder__, "files")
 FILE_CLONES = _files.make_path(DASH_ASSETS, _files.folder_file_clones)
 FILE_CLONES_URL = _files.make_path(".", "files", _files.folder_file_clones)
 
-if noteFileDropCloner == "own":
+if config.notes.file_drop_cloner == "own":
     PROFILE_FILE_CLONES = _files.make_path(__profile_folder__, _files.folder_profile_assets, _files.folder_file_clones)
 else:
     PROFILE_FILE_CLONES = _files.make_path(__profiles_home__, _files.folder_profile_assets, _files.folder_file_clones)
-if statisticsUsePositionColorCache == "own":
+
+if config.statistics.use_position_color_cache == "own":
     COLOR_CACHE = _files.make_path(__profile_folder__, _files.file_position_colors)
 else:
     COLOR_CACHE = _files.make_path(__profiles_home__, _files.file_position_colors)
-if columnStateCache == "own":
+
+if config.log.column_state_cache == "own":
     COLUMN_CACHE = _files.make_path(__profile_folder__, _files.file_column_state)
     COLUMN_SETTINGS = _files.make_path(__profile_folder__, _files.file_column_settings)
 else:
     COLUMN_CACHE = _files.make_path(__profiles_home__, _files.file_column_state)
     COLUMN_SETTINGS = _files.make_path(__profiles_home__, _files.file_column_settings)
 
-dateFormat = {"ISO 8601": "ydm", "american": "mdy", "international": "dmy"}.get(dateFormat, dateFormat)
+# Set up date/time formats
+dateFormat = {"ISO 8601": "ydm", "american": "mdy", "international": "dmy"}.get(config.ui.date_format, config.ui.date_format)
 timeFormatTransaction, timeFormatHistory, timeFormatDaterange, timeFormatLastCalc = {
     "ydm": ("%y/%d/%m %H:%M", "\u2007\u2007%a. %y/%d/%m %H:%M.%S", "YY/DD/MM", "%y / %d / %m"),
     "mdy": ("%m/%d/%y %H:%M", "\u2007\u2007%a. %m/%d/%y %H:%M.%S", "MM/DD/YY", "%m / %d / %y"),
     "dmy": ("%d/%m/%y %H:%M", "\u2007\u2007%a. %d/%m/%y %H:%M.%S", "DD/MM/YY", "%d / %m / %y"),
 }[dateFormat]
 
+# Write JavaScript config file
 with open(_files.make_path(DASH_ASSETS, _files.file_rc_js), "w") as f:
     f.write(
         "// [do not change] this file is created by `rc'\n"
-        f"const {gridDefWidthScale=};"
-        f"const {gridMinWidthScale=};"
-        f"const {gridRow3Height=};"
-        f"const {dateFormat=};"
-        f"const ccCopy = {bindKeyCodes[0]!r};"
-        f"const ccCut = {bindKeyCodes[1]!r};"
-        f"const ccPaste = {bindKeyCodes[2]!r};"
-        f"const ccCopyRow1 = {bindKeyCodes[3]!r};"
-        f"const ccCopyRow2 = {bindKeyCodes[4]!r};"
-        f"const ccCopyRow3 = {bindKeyCodes[5]!r};"
-        f"const ccAComplete = {bindKeyCodes[6]!r};"
-        f"const ccNote = {bindKeyCodes[7]!r};"
-        f"const ccNoteBack = {bindKeyCodes[8]!r};"
-        f"const ccMark = {bindKeyCodes[9]!r};"
-        f"const {noteCellVariableFormatter=};"
-        f"const {noteUnifying=};"
-        f"const noteLinkDropPattern=/{noteLinkDropPattern}/;"
-        f"const notePathDropPattern=/{notePathDropPattern}/;"
+        f"const gridDefWidthScale={config.ui.grid.def_width_scale};"
+        f"const gridMinWidthScale={config.ui.grid.min_width_scale};"
+        f"const gridRow3Height={config.ui.grid.row3_height};"
+        f"const dateFormat={dateFormat!r};"
+        f"const ccCopy = {config.ui.bind_key_codes[0]!r};"
+        f"const ccCut = {config.ui.bind_key_codes[1]!r};"
+        f"const ccPaste = {config.ui.bind_key_codes[2]!r};"
+        f"const ccCopyRow1 = {config.ui.bind_key_codes[3]!r};"
+        f"const ccCopyRow2 = {config.ui.bind_key_codes[4]!r};"
+        f"const ccCopyRow3 = {config.ui.bind_key_codes[5]!r};"
+        f"const ccAComplete = {config.ui.bind_key_codes[6]!r};"
+        f"const ccNote = {config.ui.bind_key_codes[7]!r};"
+        f"const ccNoteBack = {config.ui.bind_key_codes[8]!r};"
+        f"const ccMark = {config.ui.bind_key_codes[9]!r};"
+        f"const noteCellVariableFormatter={int(config.notes.cell_variable_formatter)};"
+        f"const noteUnifying={int(config.notes.unifying)};"
+        f"const noteLinkDropPattern=/{config.notes.link_drop_pattern}/;"
+        f"const notePathDropPattern=/{config.notes.path_drop_pattern}/;"
     )
 
-if statisticsIdBySymbol:
+# Set up statistics grouping
+if config.statistics.id_by_symbol:
     statisticsGroupId = "Symbol"
 else:
     statisticsGroupId = "Name"
 
-if gridSideSizeInitScale:
-    gridSideSizeInitValue = int(gridSideSizeInitScale * 100)
-    c2Width = f"{gridSideSizeInitValue}%"
-    c1Width = f"{100 - gridSideSizeInitValue}%"
-    sideInitBalanceValue = sideInitBalance
-    sideInitStatisticValue = int(not sideInitBalance)
-else:
-    gridSideSizeInitValue = 0
-    c2Width = "0%"
-    c1Width = "100%"
-    sideInitBalanceValue = 0
-    sideInitStatisticValue = 0
+# # Set up grid sizing
+# TODO --> move to config
+# if config.ui.grid.side_size_init_scale:
+#     gridSideSizeInitValue = int(config.ui.grid.side_size_init_scale * 100)
+#     c2Width = f"{gridSideSizeInitValue}%"
+#     c1Width = f"{100 - gridSideSizeInitValue}%"
+#     sideInitStatisticValue = int(not config.ui.grid.side_init_balance)
+# else:
+#     gridSideSizeInitValue = 0
+#     c2Width = "0%"
+#     c1Width = "100%"
+#     sideInitStatisticValue = 0
 
+# Set up position color cache
 _colorCache = dict()
-if statisticsUsePositionColorCache and statisticsUsePositionColorCache != '0':
+if config.statistics.use_position_color_cache and config.statistics.use_position_color_cache != '0':
     def _dump_color_cache():
         with open(COLOR_CACHE, "wb") as __f:
             pickle.dump(_colorCache, __f)
-
 
     try:
         with open(COLOR_CACHE, "rb") as __f:
@@ -528,7 +543,7 @@ else:
     def _dump_color_cache():
         pass
 
-_colorPalette = color_theme.color_palette_positions.copy()
+_colorPalette = config.themes.color_palette_positions.copy()
 
 
 def get_position_color(__key):
@@ -539,13 +554,14 @@ def get_position_color(__key):
         try:
             color = _colorPalette.pop(0)
         except IndexError:
-            _colorPalette = color_theme.color_palette_positions.copy()
+            _colorPalette = config.themes.color_palette_positions.copy()
             color = _colorPalette.pop(0)
         _colorCache[__key] = color
         _dump_color_cache()
         return color
 
 
+# Column state management
 COLUMN_CACHE_DATA: list[dict] | None = None
 
 
@@ -556,13 +572,14 @@ def dump_column_state(data):
         pickle.dump(data, __f)
 
 
-if columnStateCache := (columnStateCache and columnStateCache != '0' and not __ini__.cmdl.FLAGS.debug):
-
+# Initialize column state cache
+# TODO --> This should not be saved in a pickle file, but in the database.
+if columnStateCache := (config.log.column_state_cache and config.log.column_state_cache != '0' and not __ini__.cmdl.FLAGS.debug):
     _column_settings_data = [
-        logColOrderAssetId,
-        logColOrderNote,
-        logColOrder,
-        logColWidths,
+        config.log.col_order_asset_id,
+        config.log.col_order_note,
+        config.log.col_order,
+        config.log.col_widths,
     ]
     try:
         with open(COLUMN_SETTINGS, "rb") as __f:
@@ -577,18 +594,15 @@ if columnStateCache := (columnStateCache and columnStateCache != '0' and not __i
     except FileNotFoundError:
         dump_column_state(None)
 
-cellRendererChangeTakeAmount = ({"cellRenderer": "agAnimateShowChangeCellRenderer"} if cellRendererChangeTakeAmount else {})
-cellRendererChangeTakeCourse = ({"cellRenderer": "agAnimateShowChangeCellRenderer"} if cellRendererChangeTakeCourse else {})
-cellRendererChangePerformance = ({"cellRenderer": "agAnimateShowChangeCellRenderer"} if cellRendererChangePerformance else {})
-cellRendererChangeProfit = ({"cellRenderer": "agAnimateShowChangeCellRenderer"} if cellRendererChangeProfit else {})
+# Set up cell renderers
+cellRendererChangeTakeAmount = ({"cellRenderer": "agAnimateShowChangeCellRenderer"} if config.log.cell_renderer_change.take_amount else {})
+cellRendererChangeTakeCourse = ({"cellRenderer": "agAnimateShowChangeCellRenderer"} if config.log.cell_renderer_change.take_course else {})
+cellRendererChangePerformance = ({"cellRenderer": "agAnimateShowChangeCellRenderer"} if config.log.cell_renderer_change.performance else {})
+cellRendererChangeProfit = ({"cellRenderer": "agAnimateShowChangeCellRenderer"} if config.log.cell_renderer_change.profit else {})
 
-nStatisticsDrag = len(set(statisticsPerformanceOrder))
+nStatisticsDrag = len(set(config.statistics.performance.order))
 
-if useDefaultAltColors:
-    color_theme.cell_negvalue = color_theme.alt_neg
-    color_theme.cell_posvalue = color_theme.alt_pos
-    color_theme.rating_scale = color_theme.alt_rating_scale
-
+# Write CSS file
 with open(_files.make_path(DASH_ASSETS, _files.file_rc_css), "w") as f:
     cont = "/* [do not change] this file is created by `rc' */\n"
     cont += """
@@ -597,8 +611,9 @@ with open(_files.make_path(DASH_ASSETS, _files.file_rc_css), "w") as f:
   color: %s !important;
 }
 /* < agGrid Input color */
-""" % (color_theme.table_theme, color_theme.table_fg_main)
-    if useDefaultAltColors:
+""" % (config.themes.table_theme, config.themes.main.table_fg_main)
+
+    if config.ui.use_default_alt_colors:
         cont += """
 /* agGrid alt colors > */
 .ag-alt-colors {
@@ -606,21 +621,24 @@ with open(_files.make_path(DASH_ASSETS, _files.file_rc_css), "w") as f:
     --ag-value-change-delta-up-color: %s !important;
 }
 /* < agGrid alt colors */
-""" % (color_theme.alt_neg, color_theme.alt_pos)
+""" % (config.themes.alt.neg, config.themes.alt.pos)
+
     cont += """
 /* dataTable hover bg > */
 .dt-table-container__row-1 .cell-table tbody tr:hover td {
   background-color: %s !important;
 }
 /* < dataTable hover bg */
-""" % color_theme.sheet_hover_bg
+""" % config.themes.balance.hover_bg
+
     cont += """
 /* notepaper > */
 .notepaper a {
   color: %s !important;
 }
 /* < notepaper */
-""" % color_theme.notepaper_link
+""" % config.themes.notepaper.link
+
     cont += """
 /* note editor > */
 .CodeMirror {
@@ -633,10 +651,11 @@ with open(_files.make_path(DASH_ASSETS, _files.file_rc_css), "w") as f:
 }
 /* < note editor */
 """ % (
-        color_theme.notebook_bg + (color_theme.notebook_def_transparency if noteEditorDefaultTransparency else ""),
-        color_theme.notebook_gutter_bg + (color_theme.notebook_def_gutter_transparency if noteEditorDefaultTransparency else ""),
+        config.themes.notebook.bg + (config.themes.notebook.def_transparency if config.notes.editor_default_transparency else ""),
+        config.themes.notebook.gutter_bg + (config.themes.notebook.def_gutter_transparency if config.notes.editor_default_transparency else ""),
     )
-    if checkboxLongShortStyling and checkboxLongShortStyling != '0':
+
+    if config.ui.checkbox_long_short_styling and config.ui.checkbox_long_short_styling != '0':
         cont += """
 /* Short > */
 .ag-checkbox-input-wrapper.ag-indeterminate::before {
@@ -674,7 +693,8 @@ with open(_files.make_path(DASH_ASSETS, _files.file_rc_css), "w") as f:
   --ag-checkbox-background-color: transparent !important;
 }
 /* < Short */
-""" % (color_theme.cell_negvalue, ("//" if checkboxLongShortStyling == "s" else ""), color_theme.cell_posvalue)
+""" % (config.themes.cell_values.neg, ("//" if config.ui.checkbox_long_short_styling == "s" else ""), config.themes.cell_values.pos)
+
     cont += """
 /* Row Mark > */
 .row-mark::before {
@@ -689,32 +709,33 @@ with open(_files.make_path(DASH_ASSETS, _files.file_rc_css), "w") as f:
   pointer-events: none;
 }
 /* < Row Mark */
-""" % color_theme.row_mark
+""" % config.themes.row_mark
     f.write(cont)
 
+# Footer live signal
 _idx = 0
-
 
 def get_footer_live_signal():
     global _idx
     _idx += 1
     if _idx % 2:
-        return {"borderTop": "1px solid " + color_theme.footer_sig2}
+        return {"borderTop": "1px solid " + config.themes.footer.sig2}
     else:
-        return {"borderTop": "1px solid " + color_theme.footer_sig1}
-
+        return {"borderTop": "1px solid " + config.themes.footer.sig1}
 
 _d = dict()
 
-if disableFooterLifeSignal:
+if config.startup.disable_footer_life_signal:
     def get_footer_live_signal():
         return _d
 
-if strictScopeByBoth:
+# Scope settings
+if config.scope.strict_scope_by_both:
     scope_by_both = "or+"
 else:
     scope_by_both = "or"
 
+# Data initialization
 JOURNAL_DATA: list[dict] = list()
 HISTORY_DATA: dict = dict()
 HISTORY_KEYS_X_TIME_REVSORT: list[tuple[int, int]] = list()
@@ -723,7 +744,7 @@ LAST_HISTORY_CREATION_TIME: int = 0
 JOURNAL = _files.make_path(__profile_folder__, _files.file_journal)
 HISTORY = _files.make_path(__profile_folder__, _files.file_history)
 
-pickleProtocol = pickle.HIGHEST_PROTOCOL
+pickleProtocol = config.storage.pickle_protocol
 
 def _init_data():
     global JOURNAL_DATA, HISTORY_DATA, HISTORY_KEYS_X_TIME_REVSORT, LAST_HISTORY_CREATION_TIME
@@ -743,7 +764,7 @@ def _init_data():
             HISTORY_DATA = pickle.load(__f)
     except FileNotFoundError:
         print(__ini__.logtags.profile_init, "history/first run:", __firstrun)
-        HISTORY_DATA = {i: {"time": i, "data": __firstrun} for i in range(nHistorySlots)}
+        HISTORY_DATA = {i: {"time": i, "data": __firstrun} for i in range(config.maintenance.n_history_slots)}
 
     print(__ini__.logtags.profile_init, "plugin/call")
     do_dump = plugin.init_log(JOURNAL_DATA)
@@ -792,8 +813,7 @@ def _init_data():
 
     return JOURNAL_DATA
 
-
-if pluginQuickDisable:
+if config.plugins.quick_disable:
     reload(plugin)
 
 _init_data()
@@ -849,7 +869,6 @@ def _parse_call_gui():
                 )
 
             else:
-
                 proc += f" {URL}"
 
             def CALL_GUI():
@@ -860,3 +879,35 @@ def _parse_call_gui():
 
 
 _parse_call_gui()
+#
+#
+# def __getattr__(name):
+#     """Provide backward compatibility for old-style config access."""
+#     cfg = get_config()
+#
+#     # Map old names to new config paths
+#     mappings = {
+#         'dateFormat': lambda: config.ui.date_format,
+#         'columnStateCache': lambda: config.log.column_state_cache,
+#         'statisticsUsePositionColorCache': lambda: config.statistics.use_position_color_cache,
+#         'noteFileDropCloner': lambda: config.notes.file_drop_cloner,
+#         'noteFileDropClonerFlushTrashing': lambda: config.notes.file_drop_cloner_flush_trashing,
+#     }
+#
+#     if name in mappings:
+#         return mappings[name]()
+#
+#     # Check if it's a theme attribute
+#     if hasattr(config.themes, name):
+#         return getattr(config.themes, name)
+#
+#     # Check nested theme attributes
+#     for section_name in ['main', 'alt', 'columns', 'records', 'cell_values', 'marks', 'figures', 'footer', 'topbar', 'balance', 'notepaper', 'notebook', 'noteeditor_dialog']:
+#         if hasattr(getattr(config.themes, section_name, None), name):
+#             return getattr(getattr(config.themes, section_name), name)
+#
+#     # Handle color_theme backward compatibility
+#     if name == 'color_theme':
+#         return config.themes
+#
+#     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")

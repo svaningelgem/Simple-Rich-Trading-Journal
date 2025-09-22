@@ -4,6 +4,6 @@ notepaper = {
     "fontSize": "13px",
     "fontFamily": "monospace",
     "color": __env__.color_theme.notepaper_fg,
-    "backgroundColor": __env__.color_theme.notepaper_bg + (__env__.color_theme.notepaper_def_transparency if __env__.notePaperDefaultTransparency else ""),
+    "backgroundColor": __env__.color_theme.notepaper_bg + (__env__.color_theme.notepaper_def_transparency if config.notes.paper_default_transparency else ""),
     "border": "1px solid " + __env__.color_theme.notepaper_border
 }

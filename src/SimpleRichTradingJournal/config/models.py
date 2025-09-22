@@ -29,6 +29,24 @@ class GridConfig(BaseModel):
     bottom_bar_distance_bottom: int = Field(default=105, ge=0)
     bottom_bar_distance_right: int = Field(default=10, ge=0)
 
+    @property
+    def side_init_balance_value(self):
+        if self.side_size_init_scale:
+            return self.side_init_balance
+        return 0
+# # Set up grid sizing
+# if config.ui.grid.side_size_init_scale:
+#     gridSideSizeInitValue = int(config.ui.grid.side_size_init_scale * 100)
+#     c2Width = f"{gridSideSizeInitValue}%"
+#     c1Width = f"{100 - gridSideSizeInitValue}%"
+#     sideInitStatisticValue = int(not config.ui.grid.side_init_balance)
+# else:
+#     gridSideSizeInitValue = 0
+#     c2Width = "0%"
+#     c1Width = "100%"
+#     sideInitStatisticValue = 0
+
+
 
 class UIConfig(BaseModel):
     """User interface configuration."""

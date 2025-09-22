@@ -1,4 +1,5 @@
-import __env__
+from ..loader import config
+
 
 _rc = {
     "w": 1,
@@ -15,21 +16,21 @@ performance_steps = {
     4: "Month Frames",
     13: "Quarter Frames",
 }
-performance_steps_default = _rc[__env__.statisticsPerformanceStepsDefault]
+performance_steps_default = _rc[config.statistics.performance.steps_default]
 
 performance_interval = {
     1: "Week Interval",
     4: "Month Interval",
     13: "Quarter Interval",
 }
-performance_interval_default = _rc[__env__.statisticsPerformanceIntervalDefault]
+performance_interval_default = _rc[config.statistics.performance.interval_default]
 
 performance_frame = {
     1: "Week Frame",
     4: "Month Frame",
     13: "Quarter Frame",
 }
-performance_frame_default = _rc[__env__.statisticsPerformanceFrameDefault]
+performance_frame_default = _rc[config.statistics.performance.frame_default]
 
 performance_range = {
     0: "All Time",
@@ -37,4 +38,4 @@ performance_range = {
     104: "24 Months",
     208: "48 Months",
 }
-performance_range_default = _rc[__env__.statisticsPerformanceRangeDefault]
+performance_range_default = _rc[config.statistics.performance.range_default]

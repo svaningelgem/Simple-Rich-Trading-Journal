@@ -15,7 +15,7 @@ import __ini__.logtags
 import layout
 from calc.log import LogCalc, TradeFrameCalc
 from calc.utils import do_add_row
-from config import styles
+from ..config import config
 
 __lc__: LogCalc | TradeFrameCalc
 
@@ -88,7 +88,7 @@ def new_side(
         timedelta(weeks=i_performance_trailing_frame_value),
         timedelta(weeks=i_performance_trailing_interval_value),
         timedelta(weeks=i_performance_range_value),
-        config.statistics().performance.order,
+        config.statistics.performance.order,
         i_hypothesis_per_day_value,
     )
     if i_drag_event_receiver_value:
@@ -423,17 +423,17 @@ def call(
                 o_scope_by_button_style = i_scope_by_button_style | styles.misc.by_index_off
                 o_scope_by_button_children = "Scope\u2007by\u2007Both\u2007"
 
-            if __env__.startupFlushOpenTakeAmount:
-                _course_call = config.plugins().course_call
+            if config.startup.flush_open_take_amount:
+                _course_call = config.plugins.course_call
 
                 def course_call(row, _):
                     row.pop("TakeAmount", None)
                     row.pop("TakeCourse", None)
                     return True
 
-                config.plugins().course_call = course_call
+                config.plugins.course_call = course_call
                 new_table(__env__.JOURNAL_DATA)
-                config.plugins().course_call = _course_call
+                config.plugins.course_call = _course_call
 
             new_table(__env__.JOURNAL_DATA)
 

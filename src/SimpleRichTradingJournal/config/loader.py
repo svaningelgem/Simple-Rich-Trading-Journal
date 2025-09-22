@@ -1,19 +1,29 @@
 """Configuration loader with YAML support and validation."""
-
+from __future__ import annotations
 import os
 import sys
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional, Type, TypeVar
+from typing import Any, Dict, Optional, TypeVar
 
 import yaml
 from pydantic import ValidationError
 
-from .models import Config
-
-T = TypeVar('T')
-
-# Global config instance
-_config_instance: Optional[Config] = None
+from .models import (
+    Config as ConfigModel,
+    AppConfig,
+    UIConfig,
+    ThemeConfig,
+    StorageConfig,
+    LogConfig,
+    StatisticsConfig,
+    BalanceConfig,
+    NotesConfig,
+    PluginsConfig,
+    ScopeConfig,
+    MaintenanceConfig,
+    StartupConfig,
+)
 
 
 class IncludeLoader(yaml.SafeLoader):
@@ -94,7 +104,7 @@ class ConfigLoader:
             raise RuntimeError(f"Failed to load config from {config_path}: {e}")
 
     @staticmethod
-    def load_from_file(config_path: Optional[Path] = None, profile_folder: Optional[str] = None) -> Config:
+    def load_from_file(config_path: Optional[Path] = None, profile_folder: Optional[str] = None) -> 'Config':
         """Load and validate configuration from file."""
         if config_path is None:
             config_path = ConfigLoader._find_config_file(profile_folder)
@@ -106,7 +116,8 @@ class ConfigLoader:
 
         # Validate and create config instance
         try:
-            return Config.model_validate(config_data)
+            config_model = ConfigModel.model_validate(config_data)
+            return Config(config_model)
         except ValidationError as e:
             print(f"Configuration validation failed:")
             for error in e.errors():
@@ -118,7 +129,7 @@ class ConfigLoader:
     def create_example_config(output_path: Path) -> None:
         """Create an example configuration file."""
         # Create a default config instance
-        default_config = Config(themes=None)  # Themes will be set to None initially
+        default_config = ConfigModel(themes=None)  # Themes will be set to None initially
 
         # Convert to dict and clean up for YAML output
         config_dict = default_config.model_dump(exclude={'themes'})
@@ -133,86 +144,76 @@ class ConfigLoader:
         print(f"Example configuration created at: {output_path}")
 
 
-def get_config() -> Config:
-    """Get the global configuration instance."""
-    global _config_instance
-    if _config_instance is None:
-        raise RuntimeError(
-            "Configuration not initialized. Call init_config() first."
-        )
-    return _config_instance
+@dataclass
+class Config:
+    """Configuration wrapper with property-based access."""
+
+    _config: ConfigModel
+
+    @property
+    def app(self) -> AppConfig:
+        """Get app configuration."""
+        return self._config.app
+
+    @property
+    def startup(self) -> StartupConfig:
+        """Get startup configuration."""
+        return self._config.startup
+
+    @property
+    def ui(self) -> UIConfig:
+        """Get UI configuration."""
+        return self._config.ui
+
+    @property
+    def scope(self) -> ScopeConfig:
+        """Get scope configuration."""
+        return self._config.scope
+
+    @property
+    def log(self) -> LogConfig:
+        """Get log configuration."""
+        return self._config.log
+
+    @property
+    def balance(self) -> BalanceConfig:
+        """Get balance configuration."""
+        return self._config.balance
+
+    @property
+    def statistics(self) -> StatisticsConfig:
+        """Get statistics configuration."""
+        return self._config.statistics
+
+    @property
+    def notes(self) -> NotesConfig:
+        """Get notes configuration."""
+        return self._config.notes
+
+    @property
+    def plugins(self) -> PluginsConfig:
+        """Get plugins configuration."""
+        return self._config.plugins
+
+    @property
+    def storage(self) -> StorageConfig:
+        """Get storage configuration."""
+        return self._config.storage
+
+    @property
+    def maintenance(self) -> MaintenanceConfig:
+        """Get maintenance configuration."""
+        return self._config.maintenance
+
+    @property
+    def themes(self) -> ThemeConfig:
+        """Get theme configuration."""
+        return self._config.themes
+
+    def init(self, profile_folder: Optional[str] = None, config_path: Optional[Path] = None) -> None:
+        ConfigLoader.load_from_file(config_path, profile_folder)
+
+    reload = init
 
 
-def init_config(profile_folder: Optional[str] = None, config_path: Optional[Path] = None) -> Config:
-    """Initialize the global configuration instance."""
-    global _config_instance
-    _config_instance = ConfigLoader.load_from_file(config_path, profile_folder)
-    return _config_instance
-
-
-def reload_config(profile_folder: Optional[str] = None, config_path: Optional[Path] = None) -> Config:
-    """Reload the configuration from disk."""
-    global _config_instance
-    _config_instance = ConfigLoader.load_from_file(config_path, profile_folder)
-    return _config_instance
-
-
-# Convenience functions for accessing config sections
-def app() -> 'AppConfig':
-    """Get app configuration."""
-    return get_config().app
-
-
-def ui() -> 'UIConfig':
-    """Get UI configuration."""
-    return get_config().ui
-
-
-def themes() -> 'ThemeConfig':
-    """Get theme configuration."""
-    return get_config().themes
-
-
-def storage() -> 'StorageConfig':
-    """Get storage configuration."""
-    return get_config().storage
-
-
-def log() -> 'LogConfig':
-    """Get log configuration."""
-    return get_config().log
-
-
-def statistics() -> 'StatisticsConfig':
-    """Get statistics configuration."""
-    return get_config().statistics
-
-
-def balance() -> 'BalanceConfig':
-    """Get balance configuration."""
-    return get_config().balance
-
-
-def notes() -> 'NotesConfig':
-    """Get notes configuration."""
-    return get_config().notes
-
-
-def plugins() -> 'PluginsConfig':
-    """Get plugins configuration."""
-    return get_config().plugins
-
-
-def scope() -> 'ScopeConfig':
-    """Get scope configuration."""
-    return get_config().scope
-
-
-def maintenance() -> 'MaintenanceConfig':
-    """Get maintenance configuration."""
-    return get_config().maintenance
-
-
-def startup() -> 'StartupConfig':
-    """Get startup configuration."""
-    return get_config().startup
+config: Config | None = None

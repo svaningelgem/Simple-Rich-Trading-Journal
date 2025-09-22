@@ -72,9 +72,9 @@ clientside_callback(
 
         return window.dash_clientside.no_update
     }""" % (
-        __env__.disableCopyPaste,
-        int(__env__.noteFileDropCloner and __env__.noteFileDropCloner != '0'),
-        ("dark" if __env__.colorTheme == "dark" else "light")
+        config.startup.disable_copy_paste,
+        int(config.notes.file_drop_cloner and config.notes.file_drop_cloner != '0'),
+        ("dark" if config.ui.color_theme == "dark" else "light")
     ),
     Output(layout.init_done_trigger, "id"),
     Input(layout.init_done_trigger, "n_clicks"),

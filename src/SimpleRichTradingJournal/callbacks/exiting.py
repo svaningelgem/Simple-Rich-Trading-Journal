@@ -10,6 +10,8 @@ import __env__
 import __ini__.logtags
 import layout
 
+from src.SimpleRichTradingJournal.config import config
+
 
 @callback(
     Output(layout.exiting.exit_modal_body, "children"),
@@ -23,7 +25,7 @@ def exiting_req(_, n):
         html.Table(
             html.Tbody(
                 [
-                    html.Tr([html.Td("Address\u2007\u2007"), html.Th(f"{__env__.appHost}:{__env__.appPort}")]),
+                    html.Tr([html.Td("Address\u2007\u2007"), html.Th(f"{config.app.host}:{config.app.port}")]),
                     html.Tr([html.Td("PID\u2007\u2007"), html.Th(f"{__env__.SERVER_PROC.pid}")]),
                 ]
             )

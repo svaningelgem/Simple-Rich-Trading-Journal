@@ -2,6 +2,8 @@ from dash import html, dcc
 from config import styles
 import __env__
 
+from SimpleRichTradingJournal.config import config
+
 noteeditor_container = html.Div(
     [
         noteEditorFileRequest := html.Div(
@@ -102,7 +104,7 @@ notepaper_container = html.Div(
             "overflow": "scroll",
         } | styles.note.notepaper,
         className="notepaper",
-        mathjax=bool(__env__.noteMathJax),
+        mathjax=bool(config.notes.mathjax),
         link_target="_blank",
         id="notepaperElement"
     ),

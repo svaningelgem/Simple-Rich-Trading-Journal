@@ -2,6 +2,8 @@ from dash import html, dcc
 
 import __env__
 
+from SimpleRichTradingJournal.config import config
+
 autocdropdown = dcc.Dropdown(
     id="autoCDropdown",
     style={
@@ -11,7 +13,7 @@ autocdropdown = dcc.Dropdown(
 
     },
     optionHeight=20,
-    maxHeight=__env__.gridRow3Height,
+    maxHeight=config.ui.grid.row3_height,
     className="autocdropdown"
 )
 
