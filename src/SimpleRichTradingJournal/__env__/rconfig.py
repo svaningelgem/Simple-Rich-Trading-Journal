@@ -301,3 +301,16 @@ pluginQuickDisable: Literal[0, 1] = 0
 # Deactivate all plugins even if they are implemented.
 
 ##############################################################################################
+
+# STORAGE ####################################################################################
+
+storageBackend: Literal["pickle", "sqlite", "mysql", "postgresql"] = "pickle"
+# Storage backend for data persistence
+
+storageConnectionString: str = ""
+# Database connection string (required for mysql/postgresql)
+
+storageTablePrefix: str = "srtj_"
+# Prefix for database tables
+
+##############################################################################################

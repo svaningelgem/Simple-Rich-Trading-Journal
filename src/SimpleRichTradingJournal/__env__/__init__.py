@@ -12,7 +12,7 @@ from signal import SIGTERM
 from time import time
 from urllib.parse import unquote
 from urllib.request import urlopen
-
+from storage import StorageFactory, StorageAdapter, StorageConfig, StorageConfigManager
 from SimpleRichTradingJournal import __version__
 
 import __ini__.cmdl
