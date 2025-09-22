@@ -1,120 +1,48 @@
-try:
-    import sys
-    from pathlib import Path
-    sys.path.append(str(Path(__file__).parent))
-except Exception:
-    raise
+from dash import Dash, html, callback, Output, Input
+from dash_ag_grid import AgGrid
+import dash
+from logprise import logger
+from .config.models import Config
+from .storage.repository import SQLAlchemyRepository
+from .ui.layouts import LAYOUT
+from .core.calc import Calc
 
-from atexit import register, unregister
-from multiprocessing import Process, util
-from subprocess import Popen
-from time import sleep
+def run_app(config: Config):
+    """Initialize and run Dash app."""
+    logger.configure(
+        handlers=[{"sink": "srtj.log", "rotation": f"{config.logging.rotation_mb} MB", "retention": f"{config.logging.retention_days} days"}]
+    )
+    repo = SQLAlchemyRepository(config)
 
-from dash import Dash
+    app = Dash(__name__, title=config.app.host, debug=config.app.debug)
+    app.layout = LAYOUT(config, repo)
 
-import __ini__.cmdl
-import __ini__.logtags
+    # Consolidated callback example (reduce bloat: one for updates)
+    @callback(
+        Output("logElement", "rowData"),
+        Input("update_interval_trigger", "n_clicks"),
+        # States for filters, page, etc.
+    )
+    def update_log(n_clicks, filters, page):
+        trades, total = repo.query_trades(filters, page, config.ui.pagination.per_page)
+        # Format for view: e.g., holdtime = durationformat((t.take_time - t.invest_time).total_seconds() / 86400, config) if t.take_time else None
+        formatted = [
+            {
+                **t.to_dict(),
+                "holdtime": durationformat(...) if ... else None,  # View layer
+                "profit": Calc.calculate_profit(t),  # Pure func
+            }
+            for t in trades
+        ]
+        return formatted
 
-__project_name__ = "Simple Rich Trading Journal"
+    # More callbacks: scopes, search, etc., thin wrappers on repo/Calc
+    # E.g., for metrics footer:
+    @callback(Output("footer", "children"), Input("logElement", "rowData"))
+    def update_footer(row_data):
+        trades = [Trade(**r) for r in row_data]  # From formatted back to model
+        metrics = Calc.calculate_metrics(trades, config=config)
+        # Format numbers for view: f"{metrics.summary_value:,.2f}"
+        return html.Div(f"Total: {metrics.summary_value:,.2f}")  # Replicate footer
 
-
-def run():
-    if __ini__.cmdl.ADMINISTRATIVE:
-        import __env__
-    else:
-        red = [sys.executable, __file__] + sys.argv[1:]
-        red = Popen(red, stdin=sys.stdin, stderr=sys.stderr, stdout=sys.stdout, )
-        print(__ini__.logtags.proc, red.pid)
-        if not __ini__.cmdl.FLAGS.detach:
-            while red.returncode is None:
-                print(__ini__.logtags.proc, "communicate")
-                try:
-                    red.communicate()
-                except KeyboardInterrupt:
-                    break
-            print(__ini__.logtags.proc, "exit", red.returncode)
-        else:
-            print(__ini__.logtags.proc, "detach")
-
-
-class Server(Process):
-
-    def run(self):
-        import __env__
-        import layout
-
-        __env__.SERVER_PROC = self
-
-        app = Dash(
-            __project_name__,
-            title=__env__.PROFILE or __project_name__,
-            update_title="working...",
-            assets_folder=__env__.DASH_ASSETS,
-            assets_url_path=__env__._files.folder_profile_assets,
-        )
-        app.layout = layout.LAYOUT
-        app._favicon = ".favicon.ico"
-        try:
-            import callbacks
-        except Exception:
-            raise
-        
-        if __ini__.cmdl.FLAGS.quiet:
-            print(__ini__.logtags.quiet, "reassign stderr")
-
-            class null:
-
-                @staticmethod
-                def write(*_): return
-                flush = write
-
-            sys.stderr = null
-
-        app.run(debug=__ini__.cmdl.FLAGS.debug, host=__env__.appHost, port=__env__.appPort)
-
-
-def _suppress_exc(*args, **kwargs):
-    try:
-        util._exit_function(*args, **kwargs)
-    except KeyboardInterrupt:
-        print()
-        print(__ini__.logtags.server_proc, "exit 0", flush=True)
-
-
-if __name__ == "__main__":
-    import __env__
-
-    if ping := __env__.ping():
-        print(__ini__.logtags.ping, "was successful:", flush=True)
-        print(ping.decode())
-        print(__ini__.logtags.ping, "skip server start...", flush=True)
-    else:
-        server_proc = Server(name="srtj-server")
-        server_proc.start()
-
-        print(__ini__.logtags.server_proc, server_proc.pid, flush=True)
-
-        # suppress exception ##############################################################################
-
-        unregister(util._exit_function)
-        register(_suppress_exc)
-
-        ###################################################################################################
-
-        # wait for server #################################################################################
-
-        __env__.make_pong_file(server_proc.pid)
-
-        for i in range(1, 21):
-            print(__ini__.logtags.ping, f"({i})", __env__.URL, flush=True)
-            if __env__.ping():
-                break
-            sleep(.1)
-        else:
-            print(__ini__.logtags.ping, "no success, continue...", flush=True)
-
-        ###################################################################################################
-
-    __env__.CALL_GUI()
-
-    print(__ini__.logtags.main_proc, "DONE", flush=True)
+    app.run(host=config.app.host, port=config.app.port, debug=config.app.debug)

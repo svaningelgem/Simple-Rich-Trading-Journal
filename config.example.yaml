@@ -1,0 +1,79 @@
+app:
+  host: "127.0.0.1"
+  port: 8050
+  debug: false
+  quiet: false
+
+ui:
+  themes:
+    table:
+      bg_main: "white"
+      bg_header: "white"
+      fg_main: "black"
+      fg_header: "black"
+      sep: "silver"
+    row:
+      mark: ""
+    cell:
+      posvalue: null
+      negvalue: null
+    footer:
+      sig1: ""
+      sig2: ""
+    balance:
+      col1_sep: ""
+      year: ""
+      header_year: ""
+      quarter_sep: ""
+      current_sep: ""
+      col_t52: ""
+      header_t52: ""
+      col_current: ""
+      header_current: ""
+      cell_active_bg: ""
+      cell_selected_bg: ""
+      hover_bg: ""
+    notepaper:
+      bg: "white"
+      fg: "black"
+      border: ""
+      link: "blue"
+    pagination:
+      per_page: 100
+  log:
+    col_order_asset: [-1, 1, 2, 3, 0, 0, 0, -2, 8]
+    col_order_note: [0, 0, 0, 1, 2, 7, 0, 8]
+    col_widths: [100, 80, 120, 50, 80, 100, 120, 60, 80]  # Example widths
+  note:
+    mathjax: true
+    cell_variable_formatter: true
+    file_drop_cloner: "own"
+  balance:
+    t52w: true
+    current: true
+    years: true
+    quarters: true
+  statistics:
+    sun_max_depth: 3
+    group_default: [true, false, true, false, true]  # Example for checks
+    performance:
+      size_slider: 6
+      steps: 12
+      trailing_frame: "month"
+      trailing_interval: 1
+      range: "1y"
+      hypothesis_per: true
+
+storage:
+  backend: "sqlalchemy"
+  url: "sqlite:///journal.db"  # Or mysql://user:pass@host/db
+  plugin: null  # Path to custom repo subclass, e.g., "plugins/custom.py:CustomRepo"
+
+logging:
+  rotation_mb: 500
+  retention_days: 10
+
+profiles:
+  home_folder: "Trading-Journals.srtj"
+  prefix: "%"
+  demo_folder: "#demo"
