@@ -4,7 +4,7 @@ import __env__
 import __ini__.cmdl
 from config.functional import log_columns
 
-from SimpleRichTradingJournal.config import config
+from ..config import config
 
 _default_col_def = {
     "editable": True,
@@ -382,7 +382,7 @@ tradinglog = dag.AgGrid(
     columnDefs=columnDefs,
     dashGridOptions=_dashGridOptions,
     getRowId="params.data.id",
-    className=__env__.color_theme.table_theme + " ag-alt-colors",
+    className=config.themes.table_theme + " ag-alt-colors",
     dangerously_allow_code=True,
     style={
         "height": "100%",

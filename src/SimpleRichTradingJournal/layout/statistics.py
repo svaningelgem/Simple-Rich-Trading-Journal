@@ -4,7 +4,7 @@ import __env__
 from config import styles
 from config.functional import performance_trailing
 
-from SimpleRichTradingJournal.config import config
+from ..config import config
 
 POP = html.Div([
     html.Div([
@@ -31,8 +31,8 @@ POP = html.Div([
         "top": 0,
         "bottom": 0,
         "left": 0,
-        "backgroundColor": __env__.color_theme.table_bg_2,
-        "color": __env__.color_theme.table_fg_main,
+        "backgroundColor": config.themes.table_bg_2,
+        "color": config.themes.table_fg_main,
         "padding": 10,
         "borderRadius": 10,
         "overflow": "scroll"
@@ -145,7 +145,7 @@ group_by_settings = html.Div(
     style={
         "position": "absolute",
         "zIndex": -3,
-        "backgroundColor": __env__.color_theme.table_bg_main + "cc",
+        "backgroundColor": config.themes.table_bg_main + "cc",
         "margin": 10,
         "fontSize": 13
     }
@@ -262,7 +262,7 @@ framing_settings = html.Div(
     style={
         "position": "absolute",
         "zIndex": -3,
-        "backgroundColor": __env__.color_theme.table_bg_main + "cc",
+        "backgroundColor": config.themes.table_bg_main + "cc",
         "margin": 10,
         "fontSize": 13,
         "width": "var(--handle-xi)"

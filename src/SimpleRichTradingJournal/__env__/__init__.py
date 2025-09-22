@@ -389,7 +389,7 @@ try:
             print(str().join(f.read().splitlines(keepends=True)[1:]))
         exit()
     elif __ini__.cmdl.DIRECTIVES[0] == "version":
-        from SimpleRichTradingJournal import __version__
+        from .. import __version__
         exit(__version__)
 except IndexError:
     pass
@@ -879,13 +879,8 @@ def _parse_call_gui():
 
 
 _parse_call_gui()
-#
-#
-# def __getattr__(name):
-#     """Provide backward compatibility for old-style config access."""
-#     cfg = get_config()
-#
-#     # Map old names to new config paths
+
+# Map old names to new config paths
 #     mappings = {
 #         'dateFormat': lambda: config.ui.date_format,
 #         'columnStateCache': lambda: config.log.column_state_cache,
@@ -905,9 +900,3 @@ _parse_call_gui()
 #     for section_name in ['main', 'alt', 'columns', 'records', 'cell_values', 'marks', 'figures', 'footer', 'topbar', 'balance', 'notepaper', 'notebook', 'noteeditor_dialog']:
 #         if hasattr(getattr(config.themes, section_name, None), name):
 #             return getattr(getattr(config.themes, section_name), name)
-#
-#     # Handle color_theme backward compatibility
-#     if name == 'color_theme':
-#         return config.themes
-#
-#     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")

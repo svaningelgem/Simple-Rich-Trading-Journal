@@ -4,7 +4,7 @@ from traceback import print_exception
 
 from dash import html, dcc
 
-from SimpleRichTradingJournal import __version__
+from .. import __version__
 import __env__
 import __ini__.logtags
 from config import imgs
@@ -27,13 +27,13 @@ except Exception as e:
 
 update_header = ""
 update_note = ""
-about_button_color = __env__.color_theme.table_bg_main
+about_button_color = config.themes.table_bg_main
 
 try:
     with urlopen(_url_version) as u:
         available = loads(u.read())["info"]["version"]
     if __version__ != available:
-        about_button_color = __env__.color_theme.cell_negvalue
+        about_button_color = config.themes.cell_negvalue
         update_header = f"---\n\n### Version {available} is available!"
         try:
             with urlopen(_url_update) as u:
@@ -42,7 +42,7 @@ try:
             print_exception(e)
             print(__ini__.logtags.error, "The above exception occurred during the update note query.")
     else:
-        about_button_color = __env__.color_theme.cell_posvalue
+        about_button_color = config.themes.cell_posvalue
 except Exception as e:
     print_exception(e)
     print(__ini__.logtags.error, "The above exception occurred during the version query.")
@@ -59,9 +59,9 @@ about_button = html.Button(
         "display": "inline-block",
         "margin": "7px",
         "fontSize": "12px",
-        "color": __env__.color_theme.table_fg_header,
+        "color": config.themes.table_fg_header,
         "backgroundColor": about_button_color,
-        "border": "1px solid " + __env__.color_theme.table_sep,
+        "border": "1px solid " + config.themes.table_sep,
         "paddingLeft": "10px",
         "paddingRight": "10px",
         "borderRadius": "15px",
@@ -89,8 +89,8 @@ MODAL = html.Div(
         "top": 50,
         "bottom": 10,
         "left": "calc(50% - 250px)",
-        "backgroundColor": __env__.color_theme.table_bg_2,
-        "color": __env__.color_theme.table_fg_main,
+        "backgroundColor": config.themes.table_bg_2,
+        "color": config.themes.table_fg_main,
         "padding": 10,
         "borderRadius": 10,
         "overflow": "scroll"

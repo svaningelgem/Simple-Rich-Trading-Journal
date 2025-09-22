@@ -97,10 +97,10 @@ class _Positions:
                     if group_by[0] == "Short":
                         if trade["Short"]:
                             gr = -1
-                            color = __env__.color_theme.cell_negvalue
+                            color = config.themes.cell_negvalue
                         else:
                             gr = 1
-                            color = __env__.color_theme.cell_posvalue
+                            color = config.themes.cell_posvalue
                     else:
                         gr = trade[group_by[0]]
                         color = __env__.get_position_color(gr)

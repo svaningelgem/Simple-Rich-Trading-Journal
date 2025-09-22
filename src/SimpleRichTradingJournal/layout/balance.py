@@ -2,7 +2,7 @@ from dash import html
 
 import __env__
 
-from SimpleRichTradingJournal.config import config
+from ..config import config
 
 BALANCE = html.Div(
     [

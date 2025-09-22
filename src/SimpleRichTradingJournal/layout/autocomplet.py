@@ -2,7 +2,7 @@ from dash import html, dcc
 
 import __env__
 
-from SimpleRichTradingJournal.config import config
+from ..config import config
 
 autocdropdown = dcc.Dropdown(
     id="autoCDropdown",

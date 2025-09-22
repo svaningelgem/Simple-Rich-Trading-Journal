@@ -39,8 +39,8 @@ MODAL = html.Div([
         "top": 50,
         "bottom": 10,
         "left": "calc(50% - 250px)",
-        "backgroundColor": __env__.color_theme.table_bg_2,
-        "color": __env__.color_theme.table_fg_main,
+        "backgroundColor": config.themes.table_bg_2,
+        "color": config.themes.table_fg_main,
         "padding": 10,
         "borderRadius": 10,
         "overflow": "scroll"

@@ -2,7 +2,7 @@ from dash import html, dcc
 from config import styles
 import __env__
 
-from SimpleRichTradingJournal.config import config
+from ..config import config
 
 noteeditor_container = html.Div(
     [
@@ -22,7 +22,7 @@ noteeditor_container = html.Div(
                 noteeditor_file_request_ig := html.Button(
                     "keep clone",
                     style={
-                        "backgroundColor": __env__.color_theme.noteeditor_dialog_ignore,
+                        "backgroundColor": config.themes.noteeditor_dialog_ignore,
                         "border": "1px solid",
                         "margin": "1px",
                         "width": "100%"
@@ -35,7 +35,7 @@ noteeditor_container = html.Div(
                         noteeditor_file_request_rnto := html.Span(id="noteeditor_file_request_rnto_", style={"fontStyle": "italic"})
                     ],
                     style={
-                        "backgroundColor": __env__.color_theme.noteeditor_dialog_rename,
+                        "backgroundColor": config.themes.noteeditor_dialog_rename,
                         "border": "1px solid",
                         "margin": "1px",
                         "width": "100%"
@@ -45,7 +45,7 @@ noteeditor_container = html.Div(
                 noteeditor_file_request_ow := html.Button(
                     "overwrite clone",
                     style={
-                        "backgroundColor": __env__.color_theme.noteeditor_dialog_overwrite,
+                        "backgroundColor": config.themes.noteeditor_dialog_overwrite,
                         "border": "1px solid",
                         "margin": "1px",
                         "width": "100%"
@@ -57,11 +57,11 @@ noteeditor_container = html.Div(
                         html.Br(),
                         html.Div("Shortcuts: ", style={"fontWeight": "bold"}),
                         html.Span("Hold "),
-                        html.Span("ctrl", style={"width": "50%", "fontWeight": "bold", "border": "1px solid", "backgroundColor": __env__.color_theme.noteeditor_dialog_ignore}),
+                        html.Span("ctrl", style={"width": "50%", "fontWeight": "bold", "border": "1px solid", "backgroundColor": config.themes.noteeditor_dialog_ignore}),
                         html.Span(" (keep), "),
-                        html.Span("shift", style={"width": "50%", "fontWeight": "bold", "border": "1px solid", "backgroundColor": __env__.color_theme.noteeditor_dialog_rename}),
+                        html.Span("shift", style={"width": "50%", "fontWeight": "bold", "border": "1px solid", "backgroundColor": config.themes.noteeditor_dialog_rename}),
                         html.Span(" (create) or "),
-                        html.Span("ctrl+shift", style={"width": "50%", "fontWeight": "bold", "border": "1px solid", "backgroundColor": __env__.color_theme.noteeditor_dialog_overwrite}),
+                        html.Span("ctrl+shift", style={"width": "50%", "fontWeight": "bold", "border": "1px solid", "backgroundColor": config.themes.noteeditor_dialog_overwrite}),
                         html.Span(" (overwrite) "),
                         html.Br(),
                         html.Span("when dropping to bypass the dialog."),
@@ -75,9 +75,9 @@ noteeditor_container = html.Div(
                 "display": "none",
                 "padding": "10px",
                 "margin": "10px",
-                "color": __env__.color_theme.noteeditor_dialog_fg,
-                "backgroundColor": __env__.color_theme.noteeditor_dialog_bg,
-                "border": "1px solid " + __env__.color_theme.noteeditor_dialog_border,
+                "color": config.themes.noteeditor_dialog_fg,
+                "backgroundColor": config.themes.noteeditor_dialog_bg,
+                "border": "1px solid " + config.themes.noteeditor_dialog_border,
                 "fontSize": "13px"
             },
             id="noteEditorFileRequest"

@@ -12,7 +12,7 @@ import __env__
 import layout
 from config import msg
 
-from SimpleRichTradingJournal.config import config
+from ..config import config
 
 if config.notes.cell_variable_formatter:
     from string import Formatter

@@ -303,7 +303,7 @@ class _Performance:
                     y0=0,
                     y1=1,
                     line=dict(
-                        color=__env__.color_theme.shape_last_calc,
+                        color=config.themes.shape_last_calc,
                         width=1,
                         dash="dot"
                     ),
@@ -324,8 +324,8 @@ class _Performance:
                     name="Profits",
                     y=self.profits,
                     x=self.dates,
-                    line=dict(color=__env__.color_theme.trace_profit),
-                    marker=dict(color=__env__.color_theme.trace_profit),
+                    line=dict(color=config.themes.trace_profit),
+                    marker=dict(color=config.themes.trace_profit),
                     showlegend=False
                 ),
                 row=self.order[0], col=1, secondary_y=False
@@ -336,8 +336,8 @@ class _Performance:
                     name="Current Performance",
                     y=self.current_performances,
                     x=self.dates,
-                    line=dict(color=__env__.color_theme.trace_current_performance),
-                    marker=dict(color=__env__.color_theme.trace_current_performance),
+                    line=dict(color=config.themes.trace_current_performance),
+                    marker=dict(color=config.themes.trace_current_performance),
                     showlegend=False
                 ),
                 row=self.order[0], col=1, secondary_y=True
@@ -348,8 +348,8 @@ class _Performance:
                     name="Dripping Perf. Ø",
                     y=self.dripping_performances,
                     x=self.dates,
-                    line=dict(color=__env__.color_theme.trace_dripping_performance),
-                    marker=dict(color=__env__.color_theme.trace_dripping_performance),
+                    line=dict(color=config.themes.trace_dripping_performance),
+                    marker=dict(color=config.themes.trace_dripping_performance),
                     showlegend=False
                 ),
                 row=self.order[0], col=1, secondary_y=True
@@ -360,8 +360,8 @@ class _Performance:
                     name="Summary",
                     y=self.summary,
                     x=self.dates,
-                    line=dict(color=__env__.color_theme.trace_summary),
-                    marker=dict(color=__env__.color_theme.trace_summary),
+                    line=dict(color=config.themes.trace_summary),
+                    marker=dict(color=config.themes.trace_summary),
                     showlegend=False
                 ),
                 row=self.order[1], col=1, secondary_y=False
@@ -372,8 +372,8 @@ class _Performance:
                     name="Summary Rate",
                     y=self.summary_rate,
                     x=self.dates,
-                    line=dict(color=__env__.color_theme.trace_summary_rate),
-                    marker=dict(color=__env__.color_theme.trace_summary_rate),
+                    line=dict(color=config.themes.trace_summary_rate),
+                    marker=dict(color=config.themes.trace_summary_rate),
                     showlegend=False
                 ),
                 row=self.order[1], col=1, secondary_y=True
@@ -384,7 +384,7 @@ class _Performance:
                     name="Deposits",
                     y=self.deposits_amount,
                     x=self.deposits_index_date,
-                    marker=dict(color=__env__.color_theme.trace_deposit, line=dict(width=0)),
+                    marker=dict(color=config.themes.trace_deposit, line=dict(width=0)),
                     showlegend=False,
                     hovertemplate="%{y}"
                 ),
@@ -396,7 +396,7 @@ class _Performance:
                     name="Payouts",
                     y=self.payouts_amount,
                     x=self.payouts_index_date,
-                    marker=dict(color=__env__.color_theme.trace_payout, line=dict(width=0)),
+                    marker=dict(color=config.themes.trace_payout, line=dict(width=0)),
                     showlegend=False,
                     hovertemplate="%{y}"
                 ),
@@ -408,8 +408,8 @@ class _Performance:
                     name="Money",
                     y=self.deposits,
                     x=self.dates,
-                    line=dict(color=__env__.color_theme.trace_money),
-                    marker=dict(color=__env__.color_theme.trace_money),
+                    line=dict(color=config.themes.trace_money),
+                    marker=dict(color=config.themes.trace_money),
                     showlegend=False
                 ),
                 row=self.order[2], col=1, secondary_y=True
@@ -420,8 +420,8 @@ class _Performance:
                     name="Investments",
                     y=self.trade_invests,
                     x=self.dates,
-                    line=dict(color=__env__.color_theme.trace_trade_sum_invest),
-                    marker=dict(color=__env__.color_theme.trace_trade_sum_invest),
+                    line=dict(color=config.themes.trace_trade_sum_invest),
+                    marker=dict(color=config.themes.trace_trade_sum_invest),
                     showlegend=False
                 ),
                 row=self.order[3], col=1, secondary_y=False
@@ -432,8 +432,8 @@ class _Performance:
                     name="Takes",
                     y=self.trade_takes,
                     x=self.dates,
-                    line=dict(color=__env__.color_theme.trace_trade_sum_take),
-                    marker=dict(color=__env__.color_theme.trace_trade_sum_take),
+                    line=dict(color=config.themes.trace_trade_sum_take),
+                    marker=dict(color=config.themes.trace_trade_sum_take),
                     showlegend=False
                 ),
                 row=self.order[3], col=1, secondary_y=False
@@ -444,8 +444,8 @@ class _Performance:
                     name="Takes - Invest",
                     y=self.trades_sum_profits,
                     x=self.dates,
-                    line=dict(color=__env__.color_theme.trace_trade_performance),
-                    marker=dict(color=__env__.color_theme.trace_trade_performance),
+                    line=dict(color=config.themes.trace_trade_performance),
+                    marker=dict(color=config.themes.trace_trade_performance),
                     showlegend=False
                 ),
                 row=self.order[3], col=1, secondary_y=True
@@ -458,8 +458,8 @@ class _Performance:
                         name="Ø Profit/Day",
                         y=self.profit_per_day_avg,
                         x=self.dates,
-                        line=dict(color=__env__.color_theme.trace_profit_per_day_avg),
-                        marker=dict(color=__env__.color_theme.trace_profit_per_day_avg),
+                        line=dict(color=config.themes.trace_profit_per_day_avg),
+                        marker=dict(color=config.themes.trace_profit_per_day_avg),
                         showlegend=False
                     ),
                     row=self.order[4], col=1, secondary_y=False
@@ -470,8 +470,8 @@ class _Performance:
                         name="Ø Perf./Day",
                         y=self.performance_per_day_avg,
                         x=self.dates,
-                        line=dict(color=__env__.color_theme.trace_performance_per_day_avg),
-                        marker=dict(color=__env__.color_theme.trace_performance_per_day_avg),
+                        line=dict(color=config.themes.trace_performance_per_day_avg),
+                        marker=dict(color=config.themes.trace_performance_per_day_avg),
                         showlegend=False
                     ),
                     row=self.order[4], col=1, secondary_y=True
@@ -483,8 +483,8 @@ class _Performance:
                         name="Ø Profit/Year",
                         y=self.profit_per_year_avg,
                         x=self.dates,
-                        line=dict(color=__env__.color_theme.trace_profit_per_day_avg),
-                        marker=dict(color=__env__.color_theme.trace_profit_per_day_avg),
+                        line=dict(color=config.themes.trace_profit_per_day_avg),
+                        marker=dict(color=config.themes.trace_profit_per_day_avg),
                         showlegend=False
                     ),
                     row=self.order[4], col=1, secondary_y=False
@@ -495,8 +495,8 @@ class _Performance:
                         name="Ø Perf./Year",
                         y=self.performance_per_year_avg,
                         x=self.dates,
-                        line=dict(color=__env__.color_theme.trace_performance_per_day_avg),
-                        marker=dict(color=__env__.color_theme.trace_performance_per_day_avg),
+                        line=dict(color=config.themes.trace_performance_per_day_avg),
+                        marker=dict(color=config.themes.trace_performance_per_day_avg),
                         showlegend=False
                     ),
                     row=self.order[4], col=1, secondary_y=True
@@ -507,8 +507,8 @@ class _Performance:
                     name="~Investments",
                     y=self.trade_invests_2,
                     x=self.dates_2,
-                    line=dict(color=__env__.color_theme.trace_trade_sum_invest_trailing),
-                    marker=dict(color=__env__.color_theme.trace_trade_sum_invest_trailing),
+                    line=dict(color=config.themes.trace_trade_sum_invest_trailing),
+                    marker=dict(color=config.themes.trace_trade_sum_invest_trailing),
                     showlegend=False
                 ),
                 row=self.order[5], col=1, secondary_y=False
@@ -519,8 +519,8 @@ class _Performance:
                     name="~Takes",
                     y=self.trade_takes_2,
                     x=self.dates_2,
-                    line=dict(color=__env__.color_theme.trace_trade_sum_take_trailing),
-                    marker=dict(color=__env__.color_theme.trace_trade_sum_take_trailing),
+                    line=dict(color=config.themes.trace_trade_sum_take_trailing),
+                    marker=dict(color=config.themes.trace_trade_sum_take_trailing),
                     showlegend=False
                 ),
                 row=self.order[5], col=1, secondary_y=False
@@ -531,8 +531,8 @@ class _Performance:
                     name="~Performance",
                     y=self.trades_performance_2,
                     x=self.dates_2,
-                    line=dict(color=__env__.color_theme.trace_trade_performance_trailing),
-                    marker=dict(color=__env__.color_theme.trace_trade_performance_trailing),
+                    line=dict(color=config.themes.trace_trade_performance_trailing),
+                    marker=dict(color=config.themes.trace_trade_performance_trailing),
                     showlegend=False
                 ),
                 row=self.order[5], col=1, secondary_y=True
@@ -545,8 +545,8 @@ class _Performance:
                         name="~Ø Profit/Day",
                         y=self.profit_per_day_avg_2,
                         x=self.dates_2,
-                        line=dict(color=__env__.color_theme.trace_profit_per_day_avg_trailing),
-                        marker=dict(color=__env__.color_theme.trace_profit_per_day_avg_trailing),
+                        line=dict(color=config.themes.trace_profit_per_day_avg_trailing),
+                        marker=dict(color=config.themes.trace_profit_per_day_avg_trailing),
                         showlegend=False
                     ),
                     row=self.order[6], col=1, secondary_y=False
@@ -557,8 +557,8 @@ class _Performance:
                         name="~Ø Perf./Day",
                         y=self.performance_per_day_avg_2,
                         x=self.dates_2,
-                        line=dict(color=__env__.color_theme.trace_performance_per_day_avg_trailing),
-                        marker=dict(color=__env__.color_theme.trace_performance_per_day_avg_trailing),
+                        line=dict(color=config.themes.trace_performance_per_day_avg_trailing),
+                        marker=dict(color=config.themes.trace_performance_per_day_avg_trailing),
                         showlegend=False
                     ),
                     row=self.order[6], col=1, secondary_y=True
@@ -571,8 +571,8 @@ class _Performance:
                         name="~Ø Profit/Year",
                         y=self.profit_per_year_avg_2,
                         x=self.dates_2,
-                        line=dict(color=__env__.color_theme.trace_profit_per_day_avg_trailing),
-                        marker=dict(color=__env__.color_theme.trace_profit_per_day_avg_trailing),
+                        line=dict(color=config.themes.trace_profit_per_day_avg_trailing),
+                        marker=dict(color=config.themes.trace_profit_per_day_avg_trailing),
                         showlegend=False
                     ),
                     row=self.order[6], col=1, secondary_y=False
@@ -583,8 +583,8 @@ class _Performance:
                         name="~Ø Perf./Year",
                         y=self.performance_per_year_avg_2,
                         x=self.dates_2,
-                        line=dict(color=__env__.color_theme.trace_performance_per_day_avg_trailing),
-                        marker=dict(color=__env__.color_theme.trace_performance_per_day_avg_trailing),
+                        line=dict(color=config.themes.trace_performance_per_day_avg_trailing),
+                        marker=dict(color=config.themes.trace_performance_per_day_avg_trailing),
                         showlegend=False
                     ),
                     row=self.order[6], col=1, secondary_y=True
@@ -595,8 +595,8 @@ class _Performance:
                     name="~Activity",
                     y=self.activity_2,
                     x=self.dates_2,
-                    line=dict(color=__env__.color_theme.trace_activity),
-                    marker=dict(color=__env__.color_theme.trace_activity),
+                    line=dict(color=config.themes.trace_activity),
+                    marker=dict(color=config.themes.trace_activity),
                     showlegend=False,
                 ),
                 row=self.order[7], col=1, secondary_y=False
@@ -607,8 +607,8 @@ class _Performance:
                     name="~Ø Hold Days",
                     y=self.holdtime_avg_2,
                     x=self.dates_2,
-                    line=dict(color=__env__.color_theme.trace_holdtime_avg),
-                    marker=dict(color=__env__.color_theme.trace_holdtime_avg),
+                    line=dict(color=config.themes.trace_holdtime_avg),
+                    marker=dict(color=config.themes.trace_holdtime_avg),
                     showlegend=False
                 ),
                 row=self.order[7], col=1, secondary_y=True

@@ -31,7 +31,7 @@ LAYOUT = html.Div(
                                                     html.Div([
                                                         header.daterange,
                                                         header.scope_by_button,
-                                                    ], style={"border": "1px solid " + __env__.color_theme.table_sep, "borderRadius": "20px", "paddingLeft": "10px"}),
+                                                    ], style={"border": "1px solid " + config.themes.table_sep, "borderRadius": "20px", "paddingLeft": "10px"}),
                                                     html.Div(style={"display": "inline-block", "width": "1%"}),
                                                     html.Div(header.with_open_button),
                                                     header.with_open_trigger,
@@ -117,7 +117,7 @@ LAYOUT = html.Div(
                 ),
             ],
             style={
-                "backgroundColor": __env__.color_theme.table_bg_main
+                "backgroundColor": config.themes.table_bg_main
             }
         ),
         html.Div(
@@ -201,6 +201,6 @@ LAYOUT = html.Div(
         about.COMPONENTS,
         exiting.COMPONENTS,
         modal.COMPONENTS,
-        html.Div(style={"position": "absolute", "zIndex": -1, "height": "100%", "width": "100%", "backgroundColor": __env__.color_theme.table_bg_header})
+        html.Div(style={"position": "absolute", "zIndex": -1, "height": "100%", "width": "100%", "backgroundColor": config.themes.table_bg_header})
     ],
 )

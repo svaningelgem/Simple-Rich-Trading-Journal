@@ -33,8 +33,8 @@ MODAL = html.Div(
         "width": 500,
         "top": 50,
         "left": "calc(50% - 250px)",
-        "backgroundColor": __env__.color_theme.table_bg_2,
-        "color": __env__.color_theme.table_fg_main,
+        "backgroundColor": config.themes.table_bg_2,
+        "color": config.themes.table_fg_main,
         "padding": 10,
         "borderRadius": 10,
         "overflow": "scroll"
@@ -51,8 +51,8 @@ exit_button = html.Button(
         "paddingLeft": "10px",
         "paddingRight": "10px",
         "borderRadius": "15px",
-        "backgroundColor": __env__.color_theme.cell_negvalue,
-        "border": "1px solid " + __env__.color_theme.table_sep,
+        "backgroundColor": config.themes.cell_negvalue,
+        "border": "1px solid " + config.themes.table_sep,
         "opacity": 0.7,
     },
 )
