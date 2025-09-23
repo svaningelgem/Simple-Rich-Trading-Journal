@@ -7,8 +7,9 @@ from dash import html, dcc
 from .. import __version__
 import __env__
 import __ini__.logtags
-from config import imgs
+from ..config import imgs
 
+from ..config import config
 
 _url_version = "https://pypi.python.org/pypi/SimpleRichTradingJournal/json"
 _url_about =  "https://raw.githubusercontent.com/Simple-Rich-Trading-Journal/Simple-Rich-Trading-Journal/master/src/SimpleRichTradingJournal/ABOUT.md"

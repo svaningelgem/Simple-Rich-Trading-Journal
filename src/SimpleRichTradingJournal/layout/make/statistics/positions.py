@@ -9,6 +9,8 @@ from calc.log import LogCalc, _Trade
 from config import styles
 import __env__
 
+from ....config import config
+
 
 class _Positions:
     new_calc: bool

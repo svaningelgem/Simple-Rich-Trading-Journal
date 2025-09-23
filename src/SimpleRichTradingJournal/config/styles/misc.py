@@ -1,5 +1,7 @@
 import __env__
 
+from .. import config
+
 modal_close = {"border": "1px solid " + config.themes.table_sep, "backgroundColor": config.themes.top_onoff_bg, "borderRadius": 25, "height": 50}
 
 term_button = {"border": "1px solid " + config.themes.table_sep, "backgroundColor": config.themes.top_onoff_bg, "borderRadius": 25}
