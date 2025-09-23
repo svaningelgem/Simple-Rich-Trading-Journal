@@ -23,6 +23,7 @@ import config.loader as config
 from config.loader import get_config, init_config
 from things import make_assets
 
+from ..config import config
 from . import _files, _upgrade, plugin
 from .rconfig import *
 
@@ -373,11 +374,6 @@ from ..config import config
 
 _initialize_config()
 
-# Set up URL and other path-dependent variables
-URL = f"http://{config.app.host}:{config.app.port}"
-PONG_URL = _files.make_path(URL, _files.folder_profile_assets, _files.file_pong)
-
-
 def make_pong_file(server_pid) -> None:
     with open(_files.make_path(__profile_folder__, _files.folder_profile_assets, _files.file_pong), "w") as f:
         f.write(f"[{PROFILE}]\nmain    : {getpid()}\nserver  : {server_pid}")
@@ -436,16 +432,6 @@ else:
     COLUMN_CACHE = _files.make_path(__profiles_home__, _files.file_column_state)
     COLUMN_SETTINGS = _files.make_path(__profiles_home__, _files.file_column_settings)
 
-# Set up date/time formats
-dateFormat = {"ISO 8601": "ydm", "american": "mdy", "international": "dmy"}.get(
-    config.ui.date_format, config.ui.date_format
-)
-timeFormatTransaction, timeFormatHistory, timeFormatDaterange, timeFormatLastCalc = {
-    "ydm": ("%y/%d/%m %H:%M", "\u2007\u2007%a. %y/%d/%m %H:%M.%S", "YY/DD/MM", "%y / %d / %m"),
-    "mdy": ("%m/%d/%y %H:%M", "\u2007\u2007%a. %m/%d/%y %H:%M.%S", "MM/DD/YY", "%m / %d / %y"),
-    "dmy": ("%d/%m/%y %H:%M", "\u2007\u2007%a. %d/%m/%y %H:%M.%S", "DD/MM/YY", "%d / %m / %y"),
-}[dateFormat]
-
 # Write JavaScript config file
 with open(_files.make_path(DASH_ASSETS, _files.file_rc_js), "w") as f:
     f.write(
@@ -469,12 +455,6 @@ with open(_files.make_path(DASH_ASSETS, _files.file_rc_js), "w") as f:
         f"const noteLinkDropPattern=/{config.notes.link_drop_pattern}/;"
         f"const notePathDropPattern=/{config.notes.path_drop_pattern}/;"
     )
-
-# Set up statistics grouping
-if config.statistics.id_by_symbol:
-    statisticsGroupId = "Symbol"
-else:
-    statisticsGroupId = "Name"
 
 # # Set up grid sizing
 # TODO --> move to config
@@ -574,8 +554,6 @@ cellRendererChangePerformance = (
 cellRendererChangeProfit = (
     {"cellRenderer": "agAnimateShowChangeCellRenderer"} if config.log.cell_renderer_change.profit else {}
 )
-
-nStatisticsDrag = len(set(config.statistics.performance.order))
 
 # Write CSS file
 with open(_files.make_path(DASH_ASSETS, _files.file_rc_css), "w") as f:
@@ -712,12 +690,6 @@ if config.startup.disable_footer_life_signal:
     def get_footer_live_signal():
         return _d
 
-
-# Scope settings
-if config.scope.strict_scope_by_both:
-    scope_by_both = "or+"
-else:
-    scope_by_both = "or"
 
 # Data initialization
 JOURNAL_DATA: list[dict] = []

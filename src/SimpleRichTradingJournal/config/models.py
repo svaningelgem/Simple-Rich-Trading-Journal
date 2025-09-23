@@ -11,7 +11,15 @@ class AppConfig(BaseModel):
     host: str = "127.0.0.1"
     port: int = Field(default=8050, ge=1024, le=65535)
     profile: str = ""
+    @property
+    def url(self) -> str:
+        """Server URL"""
+        return f"http://{self.host}:{self.port}"
 
+    @property
+    def pong_url(self) -> str:
+        """Pong endpoint URL"""
+        return f"{self.url}/files/.pong"
 
 class StartupConfig(BaseModel):
     """Startup behavior configuration."""
@@ -72,6 +80,41 @@ class UIConfig(BaseModel):
             raise ValueError("bind_key_codes must have exactly 10 elements")
         return v
 
+    # Date/time formatting computed properties
+    @property
+    def date_format_code(self) -> str:
+        """Get internal date format code"""
+        return {"ISO 8601": "ydm", "american": "mdy", "international": "dmy"}.get(
+            self.date_format, self.date_format
+        )
+
+    @property
+    def time_format_transaction(self) -> str:
+        formats = {
+            "ydm": "%y/%d/%m %H:%M",
+            "mdy": "%m/%d/%y %H:%M",
+            "dmy": "%d/%m/%y %H:%M"
+        }
+        return formats[self.date_format_code]
+
+    @property
+    def time_format_history(self) -> str:
+        formats = {
+            "ydm": "\u2007\u2007%a. %y/%d/%m %H:%M.%S",
+            "mdy": "\u2007\u2007%a. %m/%d/%y %H:%M.%S",
+            "dmy": "\u2007\u2007%a. %d/%m/%y %H:%M.%S"
+        }
+        return formats[self.date_format_code]
+
+    @property
+    def time_format_daterange(self) -> str:
+        formats = {"ydm": "YY/DD/MM", "mdy": "MM/DD/YY", "dmy": "DD/MM/YY"}
+        return formats[self.date_format_code]
+
+    @property
+    def time_format_last_calc(self) -> str:
+        formats = {"ydm": "%y / %d / %m", "mdy": "%m / %d / %y", "dmy": "%d / %m / %y"}
+        return formats[self.date_format_code]
 
 class ScopeConfig(BaseModel):
     """Data scoping configuration."""
@@ -81,6 +124,10 @@ class ScopeConfig(BaseModel):
     strict_scope_by_both: bool = True
     calc_with_opens: bool = True
 
+    @property
+    def scope_by_both_mode(self) -> str:
+        """Scope by both mode string"""
+        return "or+" if self.strict_scope_by_both else "or"
 
 class CellRendererChangeConfig(BaseModel):
     """Cell renderer change animation configuration."""
@@ -192,7 +239,15 @@ class StatisticsConfig(BaseModel):
         if len(v) != 5:
             raise ValueError("group_default must have exactly 5 elements")
         return v
+    @property
+    def group_id_field(self) -> str:
+        """Field to use for statistics grouping"""
+        return "Symbol" if self.id_by_symbol else "Name"
 
+    @property
+    def n_statistics_drag(self) -> int:
+        """Number of draggable statistics sections"""
+        return len(set(self.performance.order))
 
 class NotesConfig(BaseModel):
     """Notes interface configuration."""
