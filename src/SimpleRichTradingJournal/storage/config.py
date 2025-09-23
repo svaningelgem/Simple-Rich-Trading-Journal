@@ -2,7 +2,7 @@
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any
 
 
 @dataclass
@@ -10,12 +10,12 @@ class StorageConfig:
     """Configuration for storage backends"""
 
     backend: str  # 'pickle', 'sqlite', 'mysql', 'postgresql'
-    connection_string: Optional[str] = None
-    file_path: Optional[str] = None
+    connection_string: str | None = None
+    file_path: str | None = None
     table_prefix: str = "srtj_"
 
     @classmethod
-    def from_dict(cls, config: Dict[str, Any]) -> "StorageConfig":
+    def from_dict(cls, config: dict[str, Any]) -> "StorageConfig":
         return cls(**config)
 
 
@@ -30,7 +30,7 @@ class StorageConfigManager:
     }
 
     @classmethod
-    def load_config(cls, profile_folder: str) -> Dict[str, Any]:
+    def load_config(cls, profile_folder: str) -> dict[str, Any]:
         """Load storage configuration from profile folder"""
         config_file = Path(profile_folder) / "storage_config.json"
 
@@ -49,7 +49,7 @@ class StorageConfigManager:
         return config
 
     @classmethod
-    def save_config(cls, profile_folder: str, config: Dict[str, Any]) -> None:
+    def save_config(cls, profile_folder: str, config: dict[str, Any]) -> None:
         """Save storage configuration to profile folder"""
         config_file = Path(profile_folder) / "storage_config.json"
 

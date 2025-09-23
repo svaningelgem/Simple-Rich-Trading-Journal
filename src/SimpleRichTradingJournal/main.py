@@ -1,47 +1,48 @@
 try:
     import sys
     from pathlib import Path
+
     sys.path.append(str(Path(__file__).parent))
 except Exception:
     raise
 
+import contextlib
 from atexit import register, unregister
 from multiprocessing import Process, util
 from subprocess import Popen
 from time import sleep
 
-from dash import Dash
-
 import __ini__.cmdl
 import __ini__.logtags
 from config import config
+from dash import Dash
 
 __project_name__ = "Simple Rich Trading Journal"
 
 
-def run():
+def run() -> None:
     if __ini__.cmdl.ADMINISTRATIVE:
         config.init_config()  # Initialize config early
-        import __env__
     else:
-        red = [sys.executable, __file__] + sys.argv[1:]
-        red = Popen(red, stdin=sys.stdin, stderr=sys.stderr, stdout=sys.stdout, )
-        print(__ini__.logtags.proc, red.pid)
+        red = [sys.executable, __file__, *sys.argv[1:]]
+        red = Popen(
+            red,
+            stdin=sys.stdin,
+            stderr=sys.stderr,
+            stdout=sys.stdout,
+        )
         if not __ini__.cmdl.FLAGS.detach:
             while red.returncode is None:
-                print(__ini__.logtags.proc, "communicate")
                 try:
                     red.communicate()
                 except KeyboardInterrupt:
                     break
-            print(__ini__.logtags.proc, "exit", red.returncode)
         else:
-            print(__ini__.logtags.proc, "detach")
+            pass
 
 
 class Server(Process):
-
-    def run(self):
+    def run(self) -> None:
         import __env__
         import layout
 
@@ -57,17 +58,17 @@ class Server(Process):
         app.layout = layout.LAYOUT
         app._favicon = ".favicon.ico"
         try:
-            import callbacks
+            pass
         except Exception:
             raise
-        
+
         if __ini__.cmdl.FLAGS.quiet:
-            print(__ini__.logtags.quiet, "reassign stderr")
 
             class null:
-
                 @staticmethod
-                def write(*_): return
+                def write(*_) -> None:
+                    return
+
                 flush = write
 
             sys.stderr = null
@@ -75,26 +76,19 @@ class Server(Process):
         app.run(debug=__ini__.cmdl.FLAGS.debug, host=config.app.host, port=config.app.port)
 
 
-def _suppress_exc(*args, **kwargs):
-    try:
+def _suppress_exc(*args, **kwargs) -> None:
+    with contextlib.suppress(KeyboardInterrupt):
         util._exit_function(*args, **kwargs)
-    except KeyboardInterrupt:
-        print()
-        print(__ini__.logtags.server_proc, "exit 0", flush=True)
 
 
 if __name__ == "__main__":
     import __env__
 
     if ping := __env__.ping():
-        print(__ini__.logtags.ping, "was successful:", flush=True)
-        print(ping.decode())
-        print(__ini__.logtags.ping, "skip server start...", flush=True)
+        pass
     else:
         server_proc = Server(name="srtj-server")
         server_proc.start()
-
-        print(__ini__.logtags.server_proc, server_proc.pid, flush=True)
 
         # suppress exception ##############################################################################
 
@@ -107,16 +101,13 @@ if __name__ == "__main__":
 
         __env__.make_pong_file(server_proc.pid)
 
-        for i in range(1, 21):
-            print(__ini__.logtags.ping, f"({i})", __env__.URL, flush=True)
+        for _i in range(1, 21):
             if __env__.ping():
                 break
-            sleep(.1)
+            sleep(0.1)
         else:
-            print(__ini__.logtags.ping, "no success, continue...", flush=True)
+            pass
 
         ###################################################################################################
 
     __env__.CALL_GUI()
-
-    print(__ini__.logtags.main_proc, "DONE", flush=True)

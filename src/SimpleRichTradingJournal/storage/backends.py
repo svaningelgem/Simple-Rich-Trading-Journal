@@ -1,16 +1,17 @@
 # Extract PickleStorage and SQLAlchemyStorage classes from first artifact
-from .interface import StorageInterface
-from .config import StorageConfig
-from typing import Dict, List, Any, Optional
+import pickle
 from datetime import datetime
 from pathlib import Path
-import pickle
+from typing import Any
+
+from .config import StorageConfig
+from .interface import StorageInterface
 
 
 class PickleStorage(StorageInterface):
     """Pickle-based storage implementation (maintains current behavior)"""
 
-    def __init__(self, config: StorageConfig):
+    def __init__(self, config: StorageConfig) -> None:
         super().__init__(config)
         self.base_path = Path(config.file_path or ".").resolve().absolute()
         self.protocol = pickle.HIGHEST_PROTOCOL
@@ -44,36 +45,34 @@ class PickleStorage(StorageInterface):
         except FileNotFoundError:
             return default
 
-    def save_journal(self, data: List[Dict[str, Any]]) -> None:
+    def save_journal(self, data: list[dict[str, Any]]) -> None:
         self._save_pickle(self.base_path / "journal.pkl", data)
 
-    def load_journal(self) -> List[Dict[str, Any]]:
+    def load_journal(self) -> list[dict[str, Any]]:
         return self._load_pickle(self.base_path / "journal.pkl", [])
 
-    def save_history(self, data: Dict[int, Dict[str, Any]]) -> None:
+    def save_history(self, data: dict[int, dict[str, Any]]) -> None:
         self._save_pickle(self.base_path / "history.pkl", data)
 
-    def load_history(self) -> Dict[int, Dict[str, Any]]:
+    def load_history(self) -> dict[int, dict[str, Any]]:
         return self._load_pickle(self.base_path / "history.pkl", {})
 
-    def save_column_state(self, data: Optional[List[Dict[str, Any]]]) -> None:
+    def save_column_state(self, data: list[dict[str, Any]] | None) -> None:
         self._save_pickle(self.base_path / "column-state.pkl", data)
 
-    def load_column_state(self) -> Optional[List[Dict[str, Any]]]:
+    def load_column_state(self) -> list[dict[str, Any]] | None:
         return self._load_pickle(self.base_path / "column-state.pkl", None)
 
-    def save_position_colors(self, data: Dict[str, str]) -> None:
+    def save_position_colors(self, data: dict[str, str]) -> None:
         self._save_pickle(self.base_path / "position-colors.pkl", data)
 
-    def load_position_colors(self) -> Dict[str, str]:
+    def load_position_colors(self) -> dict[str, str]:
         return self._load_pickle(self.base_path / "position-colors.pkl", {})
 
     def backup_exists(self) -> bool:
         return (self.base_path / "history.pkl").exists()
 
-    def create_backup(
-        self, slot_id: int, timestamp: int, data: List[Dict[str, Any]]
-    ) -> None:
+    def create_backup(self, slot_id: int, timestamp: int, data: list[dict[str, Any]]) -> None:
         # In pickle implementation, this updates the history
         history = self.load_history()
         history[slot_id] = {"time": timestamp, "data": data}
@@ -87,7 +86,7 @@ class PickleStorage(StorageInterface):
 class SQLAlchemyStorage(StorageInterface):
     """SQLAlchemy-based storage implementation"""
 
-    def __init__(self, config: StorageConfig):
+    def __init__(self, config: StorageConfig) -> None:
         super().__init__(config)
         self.engine = None
         self.session = None
@@ -96,12 +95,12 @@ class SQLAlchemyStorage(StorageInterface):
     def _setup_sqlalchemy(self) -> None:
         """Setup SQLAlchemy engine and models"""
         from sqlalchemy import (
-            create_engine,
+            JSON,
             Column,
+            DateTime,
             Integer,
             String,
-            DateTime,
-            JSON,
+            create_engine,
         )
         from sqlalchemy.ext.declarative import declarative_base
         from sqlalchemy.orm import sessionmaker
@@ -113,9 +112,7 @@ class SQLAlchemyStorage(StorageInterface):
         else:
             connection_string = self.config.connection_string
             if not connection_string:
-                raise ValueError(
-                    f"Connection string required for {self.config.backend}"
-                )
+                raise ValueError(f"Connection string required for {self.config.backend}")
 
         self.engine = create_engine(connection_string)
         Session = sessionmaker(bind=self.engine)
@@ -130,9 +127,7 @@ class SQLAlchemyStorage(StorageInterface):
             id = Column(Integer, primary_key=True)
             data = Column(JSON)
             created_at = Column(DateTime, default=datetime.utcnow)
-            updated_at = Column(
-                DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-            )
+            updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
         class HistoryEntry(Base):
             __tablename__ = f"{self.config.table_prefix}history"
@@ -147,18 +142,14 @@ class SQLAlchemyStorage(StorageInterface):
 
             id = Column(Integer, primary_key=True)
             data = Column(JSON)
-            updated_at = Column(
-                DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-            )
+            updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
         class PositionColors(Base):
             __tablename__ = f"{self.config.table_prefix}position_colors"
 
             key = Column(String(255), primary_key=True)
             color = Column(String(50))
-            updated_at = Column(
-                DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-            )
+            updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
         self.models = {
             "JournalEntry": JournalEntry,
@@ -173,7 +164,7 @@ class SQLAlchemyStorage(StorageInterface):
         """SQLAlchemy initialization is done in __init__"""
         pass
 
-    def save_journal(self, data: List[Dict[str, Any]]) -> None:
+    def save_journal(self, data: list[dict[str, Any]]) -> None:
         # Clear existing entries and save new data
         self.session.query(self.models["JournalEntry"]).delete()
 
@@ -183,34 +174,25 @@ class SQLAlchemyStorage(StorageInterface):
 
         self.session.commit()
 
-    def load_journal(self) -> List[Dict[str, Any]]:
-        entries = (
-            self.session.query(self.models["JournalEntry"])
-            .order_by(self.models["JournalEntry"].id)
-            .all()
-        )
+    def load_journal(self) -> list[dict[str, Any]]:
+        entries = self.session.query(self.models["JournalEntry"]).order_by(self.models["JournalEntry"].id).all()
         return [entry.data for entry in entries]
 
-    def save_history(self, data: Dict[int, Dict[str, Any]]) -> None:
+    def save_history(self, data: dict[int, dict[str, Any]]) -> None:
         # Clear existing and save all history
         self.session.query(self.models["HistoryEntry"]).delete()
 
         for slot_id, entry in data.items():
-            history_entry = self.models["HistoryEntry"](
-                slot_id=slot_id, timestamp=entry["time"], data=entry["data"]
-            )
+            history_entry = self.models["HistoryEntry"](slot_id=slot_id, timestamp=entry["time"], data=entry["data"])
             self.session.add(history_entry)
 
         self.session.commit()
 
-    def load_history(self) -> Dict[int, Dict[str, Any]]:
+    def load_history(self) -> dict[int, dict[str, Any]]:
         entries = self.session.query(self.models["HistoryEntry"]).all()
-        return {
-            entry.slot_id: {"time": entry.timestamp, "data": entry.data}
-            for entry in entries
-        }
+        return {entry.slot_id: {"time": entry.timestamp, "data": entry.data} for entry in entries}
 
-    def save_column_state(self, data: Optional[List[Dict[str, Any]]]) -> None:
+    def save_column_state(self, data: list[dict[str, Any]] | None) -> None:
         # Clear existing and save new state
         self.session.query(self.models["ColumnState"]).delete()
 
@@ -220,11 +202,11 @@ class SQLAlchemyStorage(StorageInterface):
 
         self.session.commit()
 
-    def load_column_state(self) -> Optional[List[Dict[str, Any]]]:
+    def load_column_state(self) -> list[dict[str, Any]] | None:
         entry = self.session.query(self.models["ColumnState"]).first()
         return entry.data if entry else None
 
-    def save_position_colors(self, data: Dict[str, str]) -> None:
+    def save_position_colors(self, data: dict[str, str]) -> None:
         # Clear existing and save new colors
         self.session.query(self.models["PositionColors"]).delete()
 
@@ -234,30 +216,22 @@ class SQLAlchemyStorage(StorageInterface):
 
         self.session.commit()
 
-    def load_position_colors(self) -> Dict[str, str]:
+    def load_position_colors(self) -> dict[str, str]:
         entries = self.session.query(self.models["PositionColors"]).all()
         return {entry.key: entry.color for entry in entries}
 
     def backup_exists(self) -> bool:
         return self.session.query(self.models["HistoryEntry"]).first() is not None
 
-    def create_backup(
-        self, slot_id: int, timestamp: int, data: List[Dict[str, Any]]
-    ) -> None:
+    def create_backup(self, slot_id: int, timestamp: int, data: list[dict[str, Any]]) -> None:
         # Update or create specific history entry
-        entry = (
-            self.session.query(self.models["HistoryEntry"])
-            .filter_by(slot_id=slot_id)
-            .first()
-        )
+        entry = self.session.query(self.models["HistoryEntry"]).filter_by(slot_id=slot_id).first()
 
         if entry:
             entry.timestamp = timestamp
             entry.data = data
         else:
-            entry = self.models["HistoryEntry"](
-                slot_id=slot_id, timestamp=timestamp, data=data
-            )
+            entry = self.models["HistoryEntry"](slot_id=slot_id, timestamp=timestamp, data=data)
             self.session.add(entry)
 
         self.session.commit()

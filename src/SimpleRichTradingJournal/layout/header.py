@@ -1,7 +1,6 @@
-from dash import html, dcc
-
-from config import styles, imgs
 import __env__
+from config import imgs, styles
+from dash import dcc, html
 
 from src.SimpleRichTradingJournal.config import config
 
@@ -22,7 +21,7 @@ scopes_x_func = {
     _Dividends: "(params.data.cat == 'v') || (params.data.cat == 'tf' && params.data.Dividend) || (params.data.cat == 'to' && params.data.Dividend)",
     _ITCs: "params.data.cat == 'i'",
     _Undefined: "params.data.cat == ''",
-    _marked: "params.data.mark == 1"
+    _marked: "params.data.mark == 1",
 }
 
 _layout = [
@@ -38,7 +37,7 @@ _layout = [
 
 scopes_check = dcc.Checklist(
     options=_layout,
-    value=list(),
+    value=[],
     inline=True,
     id="scopes_",
     style={
@@ -46,7 +45,7 @@ scopes_check = dcc.Checklist(
         "padding": "10px",
         "display": "inline-block",
     },
-    className="noselect"
+    className="noselect",
 )
 search_input = dcc.Input(
     placeholder="Search ...",
@@ -55,7 +54,7 @@ search_input = dcc.Input(
         "margin": "7px",
         "fontSize": "13px",
         "display": "inline-block",
-    }
+    },
 )
 auto_save_button = html.Button(
     "Auto. Save",
@@ -66,7 +65,7 @@ auto_save_button = html.Button(
         "margin": "7px",
         "fontSize": "13px",
         "borderRadius": "15px",
-    }
+    },
 )
 history_button = html.Button(
     "History",
@@ -82,7 +81,7 @@ history_button = html.Button(
         "paddingLeft": "10px",
         "paddingRight": "10px",
         "borderRadius": "15px",
-    }
+    },
 )
 export_button = html.Button(
     "Export",
@@ -91,7 +90,6 @@ export_button = html.Button(
     style={
         # todo "display": "inline-block",
         "display": "none",
-
         "margin": "7px",
         "fontSize": "13px",
         "color": config.themes.table_fg_header,
@@ -100,7 +98,7 @@ export_button = html.Button(
         "paddingLeft": "10px",
         "paddingRight": "10px",
         "borderRadius": "15px",
-    }
+    },
 )
 import_button = html.Button(
     "Import",
@@ -109,7 +107,6 @@ import_button = html.Button(
     style={
         # todo "display": "inline-block",
         "display": "none",
-
         "margin": "7px",
         "fontSize": "13px",
         "color": config.themes.table_fg_header,
@@ -118,7 +115,7 @@ import_button = html.Button(
         "paddingLeft": "10px",
         "paddingRight": "10px",
         "borderRadius": "15px",
-    }
+    },
 )
 reset_columns_button = html.Button(
     "Reset Columns",
@@ -134,7 +131,7 @@ reset_columns_button = html.Button(
         "paddingLeft": "10px",
         "paddingRight": "10px",
         "borderRadius": "15px",
-    }
+    },
 )
 statistics_button = html.Button(
     "STATISTICS",
@@ -147,7 +144,8 @@ statistics_button = html.Button(
         "paddingLeft": "10px",
         "paddingRight": "10px",
         "borderRadius": "15px",
-    } | styles.misc.statistics_button
+    }
+    | styles.misc.statistics_button,
 )
 balance_button = html.Button(
     "BALANCE",
@@ -160,7 +158,8 @@ balance_button = html.Button(
         "paddingLeft": "10px",
         "paddingRight": "10px",
         "borderRadius": "15px",
-    } | styles.misc.balance_button
+    }
+    | styles.misc.balance_button,
 )
 daterange = dcc.DatePickerRange(
     clearable=True,
@@ -174,7 +173,7 @@ daterange = dcc.DatePickerRange(
     style={
         "margin": "7px",
         "fontSize": "13px",
-    }
+    },
 )
 index_by_button = html.Button(
     "Index by ...",
@@ -187,7 +186,7 @@ index_by_button = html.Button(
         "paddingLeft": "10px",
         "paddingRight": "10px",
         "borderRadius": "15px",
-    }
+    },
 )
 scope_by_button = html.Button(
     "Scope by ...",
@@ -200,7 +199,7 @@ scope_by_button = html.Button(
         "paddingLeft": "10px",
         "paddingRight": "10px",
         "borderRadius": "15px",
-    }
+    },
 )
 with_open_button = html.Button(
     "with open",
@@ -213,7 +212,7 @@ with_open_button = html.Button(
         "paddingLeft": "10px",
         "paddingRight": "10px",
         "borderRadius": "15px",
-    }
+    },
 )
 with_open_trigger = html.Div(id="with_open_trigger_", n_clicks=config.scope.calc_with_opens, style={"display": "none"})
 
@@ -234,7 +233,12 @@ update_interval_button = html.Button(
         "paddingLeft": "10px",
         "paddingRight": "10px",
         "borderRadius": "15px",
-    } | style_state,
+    }
+    | style_state,
 )
-update_interval = dcc.Interval(id="update_interval_", interval=config.plugins.course_update_interval_ms, disabled=(not config.plugins.course_update_interval) or (not config.plugins.course_update_interval_on))
+update_interval = dcc.Interval(
+    id="update_interval_",
+    interval=config.plugins.course_update_interval_ms,
+    disabled=(not config.plugins.course_update_interval) or (not config.plugins.course_update_interval_on),
+)
 update_interval_trigger = html.Div(id="update_interval_trigger_", n_clicks=_interval_n, style={"display": "none"})

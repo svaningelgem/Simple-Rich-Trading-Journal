@@ -1,6 +1,5 @@
-from dash import html
-
 from config import imgs, styles
+from dash import html
 
 modal_layer = html.Div(
     style={
@@ -21,11 +20,14 @@ close_button = html.Button(
         "top": 20,
         "border": 0,
         "zIndex": -3,
-    } | styles.misc.modal_close
+    }
+    | styles.misc.modal_close,
 )
 
 
-COMPONENTS = html.Div([
-    modal_layer,
-    close_button,
-])
+COMPONENTS = html.Div(
+    [
+        modal_layer,
+        close_button,
+    ]
+)

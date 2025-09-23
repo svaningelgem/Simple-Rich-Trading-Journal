@@ -1,8 +1,9 @@
 # Extract StorageFactory from first artifact
-from typing import Union, Dict, Any
-from .interface import StorageInterface
-from .config import StorageConfig
+from typing import Any
+
 from .backends import PickleStorage, SQLAlchemyStorage
+from .config import StorageConfig
+from .interface import StorageInterface
 
 
 class StorageFactory:
@@ -16,7 +17,7 @@ class StorageFactory:
     }
 
     @classmethod
-    def create(cls, config: Union[StorageConfig, Dict[str, Any]]) -> StorageInterface:
+    def create(cls, config: StorageConfig | dict[str, Any]) -> StorageInterface:
         """Create storage instance based on configuration"""
         if isinstance(config, dict):
             config = StorageConfig.from_dict(config)

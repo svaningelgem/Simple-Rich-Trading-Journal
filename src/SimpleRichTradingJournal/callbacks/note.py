@@ -3,14 +3,13 @@ from __future__ import annotations
 import json
 from base64 import b64decode
 from os import listdir
-from re import sub, DOTALL
+from re import DOTALL, sub
 from urllib.parse import quote
-
-from dash import callback, Output, Input, State, no_update
 
 import __env__
 import layout
 from config import msg
+from dash import Input, Output, State, callback, no_update
 
 from ..config import config
 
@@ -18,7 +17,6 @@ if config.notes.cell_variable_formatter:
     from string import Formatter
 
     class _Formatter(Formatter):
-
         def get_value(self, key, args, kwargs):
             return msg.note_error_none if (v := kwargs[key]) is None else v
 
@@ -42,7 +40,6 @@ if config.notes.cell_variable_formatter:
                 return self.vformat(__format_string, (), kwargs)
             except ValueError as e:
                 return msg.note_error_fatal.format(error=e)
-
 
     _formatter = _Formatter()
 
@@ -74,19 +71,28 @@ if config.notes.cell_variable_formatter:
                 "HoldTime": None,
                 "Performance/Day": None,
                 "Profit/Day": None,
-              } | __row
+            }
+            | __row,
         )
+
     if config.notes.mathjax and config.notes.mathjax_masker:
 
         def content(obj):
-            _content = sub("\\$\\$.*?\\$\\$", lambda m: m.group().replace("{", "{{").replace("}", "}}"), obj["content"], flags=DOTALL)
+            _content = sub(
+                "\\$\\$.*?\\$\\$",
+                lambda m: m.group().replace("{", "{{").replace("}", "}}"),
+                obj["content"],
+                flags=DOTALL,
+            )
             return _format(_content, obj["row"])
 
     else:
+
         def content(obj):
             return _format(obj["content"], obj["row"])
 
 else:
+
     def content(obj):
         return obj["content"]
 
@@ -98,7 +104,7 @@ if config.notes.unifying:
         Output(layout.note.noteContentPipe, "value"),
         Input(layout.note.noteContentPipe, "value"),
         State(layout.tradinglog, "rowData"),
-        config_prevent_initial_callbacks=True
+        config_prevent_initial_callbacks=True,
     )
     def noteContentPipe(obj, row_data):
         if obj:
@@ -108,32 +114,28 @@ if config.notes.unifying:
             if _name := obj["row"].get("Name"):
                 for i in range(len(row_data)):
                     if row_data[i]["id"] == _id:
-                        for row in row_data[i + 1:]:
+                        for row in row_data[i + 1 :]:
                             if row.get("Name") == _name:
                                 _content += content({"content": row.get("Note") or "", "row": row})
                         break
             return _content, None
-        else:
-            return "", None
+        return "", None
 else:
+
     @callback(
         Output(layout.note.notepaper, "children"),
         Output(layout.note.noteContentPipe, "value"),
         Input(layout.note.noteContentPipe, "value"),
-        config_prevent_initial_callbacks=True
+        config_prevent_initial_callbacks=True,
     )
     def noteContentPipe(obj):
         if obj:
             obj = json.loads(obj)
             return content(obj), None
-        else:
-            return "", None
+        return "", None
 
 
-def make_filelink(
-        drop_obj,
-        clone=True
-):
+def make_filelink(drop_obj, clone=True):
     if drop_obj["file"] == "file":
         link_name = quote(drop_obj["name"])
         if drop_obj["type"].startswith("image/"):
@@ -145,14 +147,14 @@ def make_filelink(
         else:
             link = f"[{drop_obj['name']}]({__env__.FILE_CLONES_URL}/{link_name})"
         if clone:
-            header, encoded = drop_obj["data"].split(",", 1)
+            _header, encoded = drop_obj["data"].split(",", 1)
             data = b64decode(encoded)
             with open(f"{__env__.FILE_CLONES}/{drop_obj['name']}", "wb") as f:
                 f.write(data)
     elif drop_obj["file"] in ("link", "path"):
         link = f"[{drop_obj['name']}]({drop_obj['data']})"
     else:
-        link = drop_obj['data']
+        link = drop_obj["data"]
     return link
 
 
@@ -164,7 +166,7 @@ def make_filelink(
     Output(layout.note.noteFileClonePipe, "value", allow_duplicate=True),
     Input(layout.note.noteFileClonePipe, "value"),
     State(layout.note.noteEditorFileRequest, "style"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
 def fileClone(obj, style):
     if obj:
@@ -203,8 +205,7 @@ def fileClone(obj, style):
             style = no_update
             file_pipe = None
         return link, style, err_msg, err_rnto, file_pipe
-    else:
-        return no_update
+    return no_update
 
 
 @callback(
@@ -215,7 +216,7 @@ def fileClone(obj, style):
     State(layout.note.noteeditor_file_request_rnto, "children"),
     Input(layout.note.noteeditor_file_request_rn, "n_clicks"),
     State(layout.note.noteEditorFileRequest, "style"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
 def fileCloneRN(obj, rnto, rn, style):
     obj = json.loads(obj)
@@ -230,7 +231,7 @@ def fileCloneRN(obj, rnto, rn, style):
     State(layout.note.noteFileClonePipe, "value"),
     Input(layout.note.noteeditor_file_request_ow, "n_clicks"),
     State(layout.note.noteEditorFileRequest, "style"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
 def fileCloneOW(obj, ow, style):
     obj = json.loads(obj)
@@ -244,14 +245,13 @@ def fileCloneOW(obj, ow, style):
     State(layout.note.noteFileClonePipe, "value"),
     State(layout.note.noteEditorFileRequest, "style"),
     Input(layout.note.noteeditor_file_request_ig, "n_clicks"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
 def fileCloneIG(obj, style, _):
     if obj:
         obj = json.loads(obj)
         return make_filelink(obj, clone=False), style | {"display": "none"}, None
-    else:
-        return no_update
+    return no_update
 
 
 @callback(
@@ -260,7 +260,7 @@ def fileCloneIG(obj, style, _):
     Output(layout.note.noteFileClonePipe, "value", allow_duplicate=True),
     State(layout.note.noteEditorFileRequest, "style"),
     Input(layout.note.noteFileCloneC, "value"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
 def fileCloneC(style, _):
     return None, style | {"display": "none"}, None

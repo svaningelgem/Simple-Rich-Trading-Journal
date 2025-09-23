@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 from functools import cached_property
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
-import plotly.graph_objects as go
-
-from calc.log import LogCalc, _Trade
-from config import styles
 import __env__
+import plotly.graph_objects as go
+from config import styles
 
 from ....config import config
+
+if TYPE_CHECKING:
+    from calc.log import LogCalc, _Trade
 
 
 class _Positions:
@@ -35,28 +36,24 @@ class _Positions:
     all_figure: go.Figure
 
     show_all: bool
-    
+
     def __init__(
-            self,
-            lc: LogCalc,
-            group_by: list[Literal["Name", "Symbol", "Type", "Short", "Sector", "Category"] | str],
-            show_all: bool
-    ):
+        self,
+        lc: LogCalc,
+        group_by: list[Literal["Name", "Symbol", "Type", "Short", "Sector", "Category"] | str],
+        show_all: bool,
+    ) -> None:
         self.lc = lc
         self.opt__group_by(group_by)
         self.opt__show_all(show_all)
 
     def opt__group_by(
-            self,
-            group_by: list[Literal["Name", "Symbol", "Type", "Short", "Sector", "Category"] | str]
-    ):
+        self, group_by: list[Literal["Name", "Symbol", "Type", "Short", "Sector", "Category"] | str]
+    ) -> None:
         self.group_by = group_by
         self.new_calc = True
 
-    def opt__show_all(
-            self,
-            show_all: bool
-    ):
+    def opt__show_all(self, show_all: bool) -> None:
         self.show_all = show_all
         self.new_vis = True
 
@@ -66,9 +63,8 @@ class _Positions:
             self.new_vis = True
 
             _id_ = 0
-            
-            class Fork:
 
+            class Fork:
                 id: int
                 forks: dict[str, Fork]
                 trades: list[_Trade]
@@ -78,24 +74,24 @@ class _Positions:
                 color: str | None
 
                 def __init__(
-                        self,
-                        trade: _Trade | None,
-                        parent: Fork | None,
-                        group_attr: str | None,
-                        group: str | Literal[1, -1] | None,
-                        color: str | None,
-                ):
+                    self,
+                    trade: _Trade | None,
+                    parent: Fork | None,
+                    group_attr: str | None,
+                    group: str | Literal[1, -1] | None,
+                    color: str | None,
+                ) -> None:
                     nonlocal _id_
                     self.id = _id_
                     _id_ += 1
-                    self.forks = dict()
+                    self.forks = {}
                     self.trades = [trade]
                     self.parent = parent
                     self.group_attr = group_attr
                     self.group = group
                     self.color = color
 
-                def add(self, trade: _Trade, group_by: list):
+                def add(self, trade: _Trade, group_by: list) -> None:
                     if group_by[0] == "Short":
                         if trade["Short"]:
                             gr = -1
@@ -119,7 +115,7 @@ class _Positions:
                     return sum(i.amount for i in self.trades)
 
                 @property
-                def label(self):
+                def label(self) -> str:
                     match self.group:
                         case -1:
                             gr = "Short"
@@ -127,8 +123,7 @@ class _Positions:
                             gr = "Long"
                         case _:
                             gr = self.group
-                    return (f"{gr}<br>"
-                            f"{self.value:,.2f} ( {self.value / self.parent.value:,.2%} )")
+                    return f"{gr}<br>{self.value:,.2f} ( {self.value / self.parent.value:,.2%} )"
 
                 def get(self):
                     nonlocal _id_
@@ -140,8 +135,8 @@ class _Positions:
                     if not self.forks:
                         for trade in self.trades:
                             labels.append(
-                                (f"{trade[__env__.statisticsGroupId]}<br>"
-                                 f"{trade.amount:,.2f} ( {trade.amount / self.value:,.2%} )")
+                                f"{trade[__env__.statisticsGroupId]}<br>"
+                                f"{trade.amount:,.2f} ( {trade.amount / self.value:,.2%} )"
                             )
                             values.append(trade.amount)
                             parents.append(self.id)
@@ -159,21 +154,20 @@ class _Positions:
                     return labels, values, parents, ids, colors
 
             class Root(Fork):
-
                 @cached_property
                 def value(self):
                     return sum(i.value for i in self.forks.values())
 
                 @property
-                def label(self):
+                def label(self) -> str:
                     return f"{len(self.forks)}<br>{self.value:,.2f}"
 
-                def __init__(self):
+                def __init__(self) -> None:
                     class Parent:
                         id = ""
 
                     Fork.__init__(self, None, Parent, "", "", "")
-                    self.trades = list()
+                    self.trades = []
 
             data = Root()
 
@@ -205,8 +199,8 @@ class _Positions:
                     values=self.open_values,
                     branchvalues="total",
                     maxdepth=maxdepth,
-                    marker=dict(colors=self.open_colors),
-                    hovertemplate="%{label}<extra></extra>"
+                    marker={"colors": self.open_colors},
+                    hovertemplate="%{label}<extra></extra>",
                 ),
             )
 
@@ -218,30 +212,30 @@ class _Positions:
                     values=self.all_values,
                     branchvalues="total",
                     maxdepth=maxdepth,
-                    marker=dict(colors=self.all_colors),
-                    hovertemplate="%{label}<extra></extra>"
+                    marker={"colors": self.all_colors},
+                    hovertemplate="%{label}<extra></extra>",
                 ),
             )
 
             self.open_figure.update_layout(
-                dict(plot_bgcolor=styles.figures.color_bg_plot, paper_bgcolor=styles.figures.color_bg_paper),
-                font=dict(color=styles.figures.color_fg_plot),
-                margin=dict(t=0, l=0, r=0, b=0),
+                {"plot_bgcolor": styles.figures.color_bg_plot, "paper_bgcolor": styles.figures.color_bg_paper},
+                font={"color": styles.figures.color_fg_plot},
+                margin={"t": 0, "l": 0, "r": 0, "b": 0},
             )
 
             self.all_figure.update_layout(
-                dict(plot_bgcolor=styles.figures.color_bg_plot, paper_bgcolor=styles.figures.color_bg_paper),
-                font=dict(color=styles.figures.color_fg_plot),
-                margin=dict(t=0, l=0, r=0, b=0),
+                {"plot_bgcolor": styles.figures.color_bg_plot, "paper_bgcolor": styles.figures.color_bg_paper},
+                font={"color": styles.figures.color_fg_plot},
+                margin={"t": 0, "l": 0, "r": 0, "b": 0},
             )
 
         return self.open_figure, self.all_figure
 
     @staticmethod
     def new(
-            lc: LogCalc,
-            group_by: list[Literal["Name", "Symbol", "Type", "Short", "Sector", "Category"] | str],
-            show_all: bool
+        lc: LogCalc,
+        group_by: list[Literal["Name", "Symbol", "Type", "Short", "Sector", "Category"] | str],
+        show_all: bool,
     ):
         global OBJ
         OBJ = _Positions(lc, group_by, show_all)
@@ -249,5 +243,3 @@ class _Positions:
 
 
 OBJ: _Positions = _Positions
-
-

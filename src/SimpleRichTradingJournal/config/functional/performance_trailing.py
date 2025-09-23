@@ -1,6 +1,5 @@
 from ..loader import config
 
-
 _rc = {
     "w": 1,
     "m": 4,

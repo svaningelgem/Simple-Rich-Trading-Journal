@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 from collections import OrderedDict
-from typing import Literal, Callable, Any
-
-from dash import html
-from dash.dash_table import DataTable
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING, Any, Literal
 
-from calc.log import LogCalc
 from calc.utils import preventZeroDiv
 from config import styles
+from dash import html
+from dash.dash_table import DataTable
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from calc.log import LogCalc
 
 _i = 0
 
@@ -38,18 +41,16 @@ def __space1():
     return {f"\u200b4{_i}": lambda x: None}
 
 
-def __gr2(i):
+def __gr2(i) -> str:
     if i is None:
         return "N/A"
-    else:
-        return f"{i:,.2f}"
+    return f"{i:,.2f}"
 
 
-def __p2(i):
+def __p2(i) -> str:
     if i is None:
         return "N/A"
-    else:
-        return f"{i:,.2%}"
+    return f"{i:,.2%}"
 
 
 _records_def: OrderedDict[Any, Callable[[LogCalc], Any]] = OrderedDict()
@@ -81,10 +82,20 @@ _records_def |= __sep()
 _records_def |= __space()
 _records_def["C/O"] = lambda x: __gr2(preventZeroDiv(x.n_closures, x.n_openings, None))
 _records_def |= __sep()
-_records_def["\u2007\u2007invest\u200b\u200b"] = lambda x: __gr2(preventZeroDiv(x.closures_invest_amount, x.openings_invest_amount, None))
-_records_def["\u2007\u2007take\u200b\u200b"] = lambda x: __gr2(preventZeroDiv(x.closures_take_amount, x.openings_take_amount, None))
-_records_def["\u2007\u2007profit\u200b\u200b"] = lambda x: __gr2(preventZeroDiv(x.sum_closures_profit, x.sum_openings_profit, None))
-_records_def["\u2007\u2007perf.\u200b\u200b"] = lambda x: __gr2(preventZeroDiv(preventZeroDiv(x.sum_openings_profit, x.money, 0), preventZeroDiv(x.sum_closures_profit, x.money, 0), None))
+_records_def["\u2007\u2007invest\u200b\u200b"] = lambda x: __gr2(
+    preventZeroDiv(x.closures_invest_amount, x.openings_invest_amount, None)
+)
+_records_def["\u2007\u2007take\u200b\u200b"] = lambda x: __gr2(
+    preventZeroDiv(x.closures_take_amount, x.openings_take_amount, None)
+)
+_records_def["\u2007\u2007profit\u200b\u200b"] = lambda x: __gr2(
+    preventZeroDiv(x.sum_closures_profit, x.sum_openings_profit, None)
+)
+_records_def["\u2007\u2007perf.\u200b\u200b"] = lambda x: __gr2(
+    preventZeroDiv(
+        preventZeroDiv(x.sum_openings_profit, x.money, 0), preventZeroDiv(x.sum_closures_profit, x.money, 0), None
+    )
+)
 _records_def |= __sep()
 _records_def |= __space()
 _records_def["C&O"] = lambda x: "\u200b"
@@ -167,38 +178,38 @@ class _Balance:
     dt: DataTable
 
     def __init__(
-            self,
-            lc: LogCalc,
-            by_attr: Literal["idx", "min", "max", "or"] | str = "or",
-            years: bool = True,
-            quarters: bool = True,
-            t52w: bool = True,
-            current_: bool = True,
-    ):
+        self,
+        lc: LogCalc,
+        by_attr: Literal["idx", "min", "max", "or"] | str = "or",
+        years: bool = True,
+        quarters: bool = True,
+        t52w: bool = True,
+        current_: bool = True,
+    ) -> None:
         self.lc = lc
         self.opt__by_attr(by_attr)
         self.opt__visible(years, quarters, t52w, current_)
-        self.records = list()
-        self.columns = list()
-        self.years = list()
-        self.quarters = list()
-        self.style_data_conditional = list()
-        self.style_header_conditional = list()
+        self.records = []
+        self.columns = []
+        self.years = []
+        self.quarters = []
+        self.style_data_conditional = []
+        self.style_header_conditional = []
         self.current_ = ("", "")
         self.t52w = ""
         self.dt = DataTable()
 
-    def opt__by_attr(self, by_attr: Literal["idx", "min", "max", "or"] | str = "or"):
+    def opt__by_attr(self, by_attr: Literal["idx", "min", "max", "or"] | str = "or") -> None:
         self.by_attr = by_attr
         self.new_calc = True
 
     def opt__visible(
-            self,
-            years: bool = True,
-            quarters: bool = True,
-            t52w: bool = True,
-            current_: bool = True,
-    ):
+        self,
+        years: bool = True,
+        quarters: bool = True,
+        t52w: bool = True,
+        current_: bool = True,
+    ) -> None:
         self.vis_years = years
         self.vis_quarters = quarters
         self.vis_t52w = t52w
@@ -213,15 +224,14 @@ class _Balance:
 
                 this_date = datetime.now()
 
-                data = dict()
-                columns = list()
-                self.years = list()
-                self.quarters = list()
+                data = {}
+                columns = []
+                self.years = []
+                self.quarters = []
 
-                def add_frame(col, frame: LogCalc):
-
+                def add_frame(col, frame: LogCalc) -> None:
                     for rec, func in _records_def.items():
-                        data.setdefault(rec, dict())[col] = func(frame)
+                        data.setdefault(rec, {})[col] = func(frame)
 
                     columns.append(col)
 
@@ -237,17 +247,21 @@ class _Balance:
                         self.quarters.append(q)
                         add_frame(
                             q,
-                            self.lc.getTradeFrame(datetime(first_year, mo, 1), datetime(first_year, mo + 3, 1), by_attr=self.by_attr)
+                            self.lc.getTradeFrame(
+                                datetime(first_year, mo, 1), datetime(first_year, mo + 3, 1), by_attr=self.by_attr
+                            ),
                         )
                     current_quarter = f"~Q{(this_quarter - 1) // 3 + 1} {first_year}"
                     add_frame(
                         current_quarter,
-                        self.lc.getTradeFrame(datetime(first_year, 10, 1), datetime(first_year + 1, 1, 1), by_attr=self.by_attr)
+                        self.lc.getTradeFrame(
+                            datetime(first_year, 10, 1), datetime(first_year + 1, 1, 1), by_attr=self.by_attr
+                        ),
                     )
                     current_year = f"~Y{first_year}"
                     add_frame(
                         current_year,
-                        self.lc.getTradeFrame(first_date, datetime(first_year + 1, 1, 1), by_attr=self.by_attr)
+                        self.lc.getTradeFrame(first_date, datetime(first_year + 1, 1, 1), by_attr=self.by_attr),
                     )
                 else:
                     for mo in range(first_quarter, 10, 3):
@@ -255,19 +269,22 @@ class _Balance:
                         self.quarters.append(q)
                         add_frame(
                             q,
-                            self.lc.getTradeFrame(datetime(first_year, mo, 1), datetime(first_year, mo + 3, 1), by_attr=self.by_attr)
+                            self.lc.getTradeFrame(
+                                datetime(first_year, mo, 1), datetime(first_year, mo + 3, 1), by_attr=self.by_attr
+                            ),
                         )
                     q = f"Q4 {first_year}"
                     self.quarters.append(q)
                     add_frame(
                         q,
-                        self.lc.getTradeFrame(datetime(first_year, 10, 1), datetime(first_year + 1, 1, 1), by_attr=self.by_attr)
+                        self.lc.getTradeFrame(
+                            datetime(first_year, 10, 1), datetime(first_year + 1, 1, 1), by_attr=self.by_attr
+                        ),
                     )
                     y = f"Y{first_year}"
                     self.years.append(y)
                     add_frame(
-                        y,
-                        self.lc.getTradeFrame(first_date, datetime(first_year + 1, 1, 1), by_attr=self.by_attr)
+                        y, self.lc.getTradeFrame(first_date, datetime(first_year + 1, 1, 1), by_attr=self.by_attr)
                     )
                     for year in range(first_year + 1, this_year):
                         for q, mo in enumerate(range(1, 10, 3), 1):
@@ -275,19 +292,23 @@ class _Balance:
                             self.quarters.append(q)
                             add_frame(
                                 q,
-                                self.lc.getTradeFrame(datetime(year, mo, 1), datetime(year, mo + 3, 1), by_attr=self.by_attr)
+                                self.lc.getTradeFrame(
+                                    datetime(year, mo, 1), datetime(year, mo + 3, 1), by_attr=self.by_attr
+                                ),
                             )
                         q = f"Q4 {year}"
                         self.quarters.append(q)
                         add_frame(
                             q,
-                            self.lc.getTradeFrame(datetime(year, 10, 1), datetime(year + 1, 1, 1), by_attr=self.by_attr)
+                            self.lc.getTradeFrame(
+                                datetime(year, 10, 1), datetime(year + 1, 1, 1), by_attr=self.by_attr
+                            ),
                         )
                         y = f"Y{year}"
                         self.years.append(y)
                         add_frame(
                             y,
-                            self.lc.getTradeFrame(datetime(year, 1, 1), datetime(year + 1, 1, 1), by_attr=self.by_attr)
+                            self.lc.getTradeFrame(datetime(year, 1, 1), datetime(year + 1, 1, 1), by_attr=self.by_attr),
                         )
                     if this_quarter == 10:
                         for q, mo in enumerate(range(1, 10, 3), 1):
@@ -295,12 +316,16 @@ class _Balance:
                             self.quarters.append(q)
                             add_frame(
                                 q,
-                                self.lc.getTradeFrame(datetime(this_year, mo, 1), datetime(this_year, mo + 3, 1), by_attr=self.by_attr)
+                                self.lc.getTradeFrame(
+                                    datetime(this_year, mo, 1), datetime(this_year, mo + 3, 1), by_attr=self.by_attr
+                                ),
                             )
                         current_quarter = f"~Q4 {this_year}"
                         add_frame(
                             current_quarter,
-                            self.lc.getTradeFrame(datetime(this_year, 10, 1), datetime(this_year + 1, 1, 1), by_attr=self.by_attr)
+                            self.lc.getTradeFrame(
+                                datetime(this_year, 10, 1), datetime(this_year + 1, 1, 1), by_attr=self.by_attr
+                            ),
                         )
                     else:
                         q = 0
@@ -309,17 +334,25 @@ class _Balance:
                             self.quarters.append(_q)
                             add_frame(
                                 _q,
-                                self.lc.getTradeFrame(datetime(this_year, mo, 1), datetime(this_year, mo + 3, 1), by_attr=self.by_attr)
+                                self.lc.getTradeFrame(
+                                    datetime(this_year, mo, 1), datetime(this_year, mo + 3, 1), by_attr=self.by_attr
+                                ),
                             )
                         current_quarter = f"~Q{q + 1} {this_year}"
                         add_frame(
                             current_quarter,
-                            self.lc.getTradeFrame(datetime(this_year, this_quarter, 1), datetime(this_year, this_quarter + 3, 1), by_attr=self.by_attr)
+                            self.lc.getTradeFrame(
+                                datetime(this_year, this_quarter, 1),
+                                datetime(this_year, this_quarter + 3, 1),
+                                by_attr=self.by_attr,
+                            ),
                         )
                     current_year = f"~Y{this_year}"
                     add_frame(
                         current_year,
-                        self.lc.getTradeFrame(datetime(this_year, 1, 1), datetime(this_year + 1, 1, 1), by_attr=self.by_attr)
+                        self.lc.getTradeFrame(
+                            datetime(this_year, 1, 1), datetime(this_year + 1, 1, 1), by_attr=self.by_attr
+                        ),
                     )
 
                 this_m52W = this_date - timedelta(weeks=52)
@@ -328,36 +361,50 @@ class _Balance:
                     self.t52w = f"T52W (~{scopeW})"
                 else:
                     self.t52w = "T52W"
-                add_frame(
-                    self.t52w,
-                    self.lc.getTradeFrame(this_m52W, this_p1D, by_attr=self.by_attr)
+                add_frame(self.t52w, self.lc.getTradeFrame(this_m52W, this_p1D, by_attr=self.by_attr))
+
+                self.records = [{"_": row} | data[row] for row in _records_def]
+                self.columns = [{"name": "\u200b", "id": "_", "hideable": True}] + [
+                    {"name": c, "id": c} for c in reversed(columns)
+                ]
+
+                self.style_data_conditional = (
+                    _style_data_conditional
+                    + [{"if": {"column_id": y}} | styles.balance.year_cell for y in self.years]
+                    + [
+                        {"if": {"column_id": q4}} | styles.balance.q4_cell
+                        for q4 in self.quarters
+                        if q4.startswith("Q4")
+                    ]
+                    + [
+                        {"if": {"column_id": q1}} | styles.balance.q1_cell
+                        for q1 in self.quarters
+                        if q1.startswith("Q1")
+                    ]
+                    + [
+                        {"if": {"column_id": self.t52w}} | styles.balance.t52w_cell,
+                        {"if": {"column_id": current_year}} | styles.balance.current_cell,
+                        {"if": {"column_id": current_quarter}} | styles.balance.current_cell,
+                    ]
                 )
-
-                self.records = [{"_": row} | data[row] for row in _records_def.keys()]
-                self.columns = [{"name": "\u200b", "id": "_", "hideable": True}] + [{"name": c, "id": c} for c in reversed(columns)]
-
-                self.style_data_conditional = _style_data_conditional + [
-                    {"if": {"column_id": y}} | styles.balance.year_cell for y in self.years
-                ] + [
-                    {"if": {"column_id": q4}} | styles.balance.q4_cell for q4 in self.quarters if q4.startswith("Q4")
-                ] + [
-                    {"if": {"column_id": q1}} | styles.balance.q1_cell for q1 in self.quarters if q1.startswith("Q1")
-                ] + [
-                    {"if": {"column_id": self.t52w}} | styles.balance.t52w_cell,
-                    {"if": {"column_id": current_year}} | styles.balance.current_cell,
-                    {"if": {"column_id": current_quarter}} | styles.balance.current_cell,
-                ]
-                self.style_header_conditional = [
-                    {"if": {"column_id": y}} | styles.balance.year_header for y in self.years
-                ] + [
-                    {"if": {"column_id": q4}} | styles.balance.q4_header for q4 in self.quarters if q4.startswith("Q4")
-                ] + [
-                    {"if": {"column_id": q1}} | styles.balance.q1_header for q1 in self.quarters if q1.startswith("Q1")
-                ] + [
-                    {"if": {"column_id": self.t52w}} | styles.balance.t52w_header,
-                    {"if": {"column_id": current_year}} | styles.balance.current_header,
-                    {"if": {"column_id": current_quarter}} | styles.balance.current_header,
-                ]
+                self.style_header_conditional = (
+                    [{"if": {"column_id": y}} | styles.balance.year_header for y in self.years]
+                    + [
+                        {"if": {"column_id": q4}} | styles.balance.q4_header
+                        for q4 in self.quarters
+                        if q4.startswith("Q4")
+                    ]
+                    + [
+                        {"if": {"column_id": q1}} | styles.balance.q1_header
+                        for q1 in self.quarters
+                        if q1.startswith("Q1")
+                    ]
+                    + [
+                        {"if": {"column_id": self.t52w}} | styles.balance.t52w_header,
+                        {"if": {"column_id": current_year}} | styles.balance.current_header,
+                        {"if": {"column_id": current_quarter}} | styles.balance.current_header,
+                    ]
+                )
                 self.current_ = (current_year, current_quarter)
 
             if self.new_vis:
@@ -381,31 +428,26 @@ class _Balance:
                     style_header=styles.balance.header_default,
                     style_data_conditional=self.style_data_conditional,
                     style_header_conditional=self.style_header_conditional,
-                    css=[{"selector": ".show-hide", "rule": "display: none"}]
+                    css=[{"selector": ".show-hide", "rule": "display: none"}],
                 )
 
-            return html.Div([
-                html.Div(
-                    _dt1,
-                    style={"display": "inline-block"}
-                ),
-                html.Div(
-                    self.dt,
-                    style={"display": "inline-block", "overflowX": "scroll", "width": "100%"}
-                ),
-            ],
-                style={
-                    "display": "flex"
-                })
+            return html.Div(
+                [
+                    html.Div(_dt1, style={"display": "inline-block"}),
+                    html.Div(self.dt, style={"display": "inline-block", "overflowX": "scroll", "width": "100%"}),
+                ],
+                style={"display": "flex"},
+            )
+        return None
 
     @staticmethod
     def new(
-            lc: LogCalc,
-            by_attr: Literal["idx", "min", "max", "or"] | str = "or",
-            years: bool = True,
-            quarters: bool = True,
-            t52w: bool = True,
-            current_: bool = True,
+        lc: LogCalc,
+        by_attr: Literal["idx", "min", "max", "or"] | str = "or",
+        years: bool = True,
+        quarters: bool = True,
+        t52w: bool = True,
+        current_: bool = True,
     ):
         global OBJ
         OBJ = _Balance(lc, by_attr, years, quarters, t52w, current_)

@@ -1,16 +1,15 @@
 from json import loads
 
-from dash import callback, Output, Input, no_update
-
 import layout
 from callbacks import main
+from dash import Input, Output, callback, no_update
 
 
 @callback(
     Output(layout.autocomplet.autocdropdown, "options"),
     Input(layout.autocomplet.autocdropdown, "search_value"),
     Input(layout.autocomplet.autoctrigger, "value"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
 def autoc_enter(search_val, trigger):
     trigger = loads(trigger)
@@ -30,6 +29,4 @@ def autoc_enter(search_val, trigger):
         case _:
             return no_update
 
-    opts = [{"label": i, "value": i} for i in opts]
-
-    return opts
+    return [{"label": i, "value": i} for i in opts]

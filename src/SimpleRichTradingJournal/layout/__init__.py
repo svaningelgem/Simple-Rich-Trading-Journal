@@ -1,11 +1,10 @@
-from dash import html, dcc
-
 import __env__
 from config import styles
-from . import header, history, statistics, balance, autocomplet, note, about, exiting, modal
-from . import make
-from .log import tradinglog
+from dash import dcc, html
+
 from ..config import config
+from . import about, autocomplet, balance, exiting, header, history, make, modal, note, statistics
+from .log import tradinglog
 
 LAYOUT = html.Div(
     [
@@ -28,22 +27,24 @@ LAYOUT = html.Div(
                                                     header.scopes_check,
                                                     html.Div(header.index_by_button),
                                                     header.search_input,
-                                                    html.Div([
-                                                        header.daterange,
-                                                        header.scope_by_button,
-                                                    ], style={"border": "1px solid " + config.themes.table_sep, "borderRadius": "20px", "paddingLeft": "10px"}),
+                                                    html.Div(
+                                                        [
+                                                            header.daterange,
+                                                            header.scope_by_button,
+                                                        ],
+                                                        style={
+                                                            "border": "1px solid " + config.themes.table_sep,
+                                                            "borderRadius": "20px",
+                                                            "paddingLeft": "10px",
+                                                        },
+                                                    ),
                                                     html.Div(style={"display": "inline-block", "width": "1%"}),
                                                     html.Div(header.with_open_button),
                                                     header.with_open_trigger,
                                                 ],
-                                                style={
-                                                    "display": "flex"
-                                                }
+                                                style={"display": "flex"},
                                             ),
-                                            style={
-                                                "width": "100%",
-                                                "display": "inline-block"
-                                            }
+                                            style={"width": "100%", "display": "inline-block"},
                                         ),
                                         html.Div(
                                             [
@@ -56,7 +57,7 @@ LAYOUT = html.Div(
                                                     ],
                                                     style={
                                                         "textAlign": "end",
-                                                    }
+                                                    },
                                                 ),
                                             ],
                                             style={
@@ -64,16 +65,13 @@ LAYOUT = html.Div(
                                                 "top": 0,
                                                 "right": 0,
                                                 "textAlign": "end",
-                                            }
+                                            },
                                         ),
                                     ],
-                                    style={
-                                              "width": "100%",
-                                              "display": "flex"
-                                          } | styles.misc.header
+                                    style={"width": "100%", "display": "flex"} | styles.misc.header,
                                 ),
                             ],
-                            id="gridR1"
+                            id="gridR1",
                         ),
                         html.Div(
                             [
@@ -83,42 +81,37 @@ LAYOUT = html.Div(
                                     ],
                                     id="gridC1",
                                     className="col-div col-div-flex border-div",
-                                    style={
-                                        "width": __env__.c1Width,
-                                        "height": "100%"
-                                    }
+                                    style={"width": __env__.c1Width, "height": "100%"},
                                 ),
                                 split_handle := html.Div(
                                     id="gridSplitter",
                                     style={
-                                              "height": "inherit",
-                                          } | (styles.misc.balance_split_handle if config.ui.grid.side_init_balance else styles.misc.statistics_split_handle),
-                                    className="noselect"
+                                        "height": "inherit",
+                                    }
+                                    | (
+                                        styles.misc.balance_split_handle
+                                        if config.ui.grid.side_init_balance
+                                        else styles.misc.statistics_split_handle
+                                    ),
+                                    className="noselect",
                                 ),
                                 c_2 := html.Div(
-                                    [
-                                        statistics.STATISTICS,
-                                        balance.BALANCE
-                                    ],
+                                    [statistics.STATISTICS, balance.BALANCE],
                                     id="gridC2",
                                     className="col-div col-div-flex border-div",
                                     style={
                                         "width": __env__.c2Width,
                                         "height": "100%",
-                                    }
-                                )
+                                    },
+                                ),
                             ],
                             id="gridR2",
-                            style={
-                                "display": "flex"
-                            }
-                        )
+                            style={"display": "flex"},
+                        ),
                     ]
                 ),
             ],
-            style={
-                "backgroundColor": config.themes.table_bg_main
-            }
+            style={"backgroundColor": config.themes.table_bg_main},
         ),
         html.Div(
             [
@@ -132,22 +125,14 @@ LAYOUT = html.Div(
                         header.import_button,
                         header.export_button,
                     ],
-                    style={
-                        "width": "50%",
-                        "textAlign": "left",
-                        "display": "inline-block"
-                    }
+                    style={"width": "50%", "textAlign": "left", "display": "inline-block"},
                 ),
                 html.Div(
                     [
                         header.balance_button,
                         header.statistics_button,
                     ],
-                    style={
-                        "width": "50%",
-                        "textAlign": "right",
-                        "display": "inline-block"
-                    }
+                    style={"width": "50%", "textAlign": "right", "display": "inline-block"},
                 ),
             ],
             id="bottomBar",
@@ -157,8 +142,8 @@ LAYOUT = html.Div(
                 "right": config.ui.grid.bottom_bar_distance_right,
                 "width": "100%",
                 "zIndex": 1,
-                "display": "none"
-            }
+                "display": "none",
+            },
         ),
         summary_footer := html.Div(
             id="gridR3",
@@ -166,27 +151,42 @@ LAYOUT = html.Div(
                 "width": "100%",
                 "position": "absolute",
                 "bottom": 0,
-            } | styles.misc.summary_footer
+            }
+            | styles.misc.summary_footer,
         ),
-        (html.Div(
-            __env__.PROFILE,
-            style={
-                "position": "absolute",
-                "bottom": 0,
-                "left": 0,
-                "fontSize": 12,
-                "borderTop": "2px outset",
-                "borderRight": "2px outset",
-                "paddingLeft": 3,
-                "paddingRight": 4,
-            } | styles.misc.summary_footer | {"backgroundColor": ""}
-        ) if __env__.PROFILE else html.Div()),
+        (
+            html.Div(
+                __env__.PROFILE,
+                style={
+                    "position": "absolute",
+                    "bottom": 0,
+                    "left": 0,
+                    "fontSize": 12,
+                    "borderTop": "2px outset",
+                    "borderRight": "2px outset",
+                    "paddingLeft": 3,
+                    "paddingRight": 4,
+                }
+                | styles.misc.summary_footer
+                | {"backgroundColor": ""},
+            )
+            if __env__.PROFILE
+            else html.Div()
+        ),
         renderer_trigger := html.Div(id="renderer_trigger_", n_clicks=0),
         c2Hide_trigger := html.Div(id="c2Hide_trigger_", n_clicks=0),
-        drag_event_receiver := dcc.Input(type="text", id="dragEventReceiver", style={'visibility': 'hidden', "display": "none"}),
-        drag_event_receiver2 := dcc.Input(type="text", id="dragEventReceiver2", style={'visibility': 'hidden', "display": "none"}),
-        edit_event_receiver := dcc.Input(type="text", id="editEventReceiver", style={'visibility': 'hidden', "display": "none"}),
-        quick_search_receiver := dcc.Input(type="text", id="quickSearchReceiver", style={'visibility': 'hidden', "display": "none"}),
+        drag_event_receiver := dcc.Input(
+            type="text", id="dragEventReceiver", style={"visibility": "hidden", "display": "none"}
+        ),
+        drag_event_receiver2 := dcc.Input(
+            type="text", id="dragEventReceiver2", style={"visibility": "hidden", "display": "none"}
+        ),
+        edit_event_receiver := dcc.Input(
+            type="text", id="editEventReceiver", style={"visibility": "hidden", "display": "none"}
+        ),
+        quick_search_receiver := dcc.Input(
+            type="text", id="quickSearchReceiver", style={"visibility": "hidden", "display": "none"}
+        ),
         history.MODAL,
         statistics.POP,
         init_trigger := html.Div(id="init_trigger_"),
@@ -201,6 +201,14 @@ LAYOUT = html.Div(
         about.COMPONENTS,
         exiting.COMPONENTS,
         modal.COMPONENTS,
-        html.Div(style={"position": "absolute", "zIndex": -1, "height": "100%", "width": "100%", "backgroundColor": config.themes.table_bg_header})
+        html.Div(
+            style={
+                "position": "absolute",
+                "zIndex": -1,
+                "height": "100%",
+                "width": "100%",
+                "backgroundColor": config.themes.table_bg_header,
+            }
+        ),
     ],
 )

@@ -4,14 +4,13 @@ from .autocomplete import *
 from .clientside import *
 from .columnstate import *
 from .courseupdate import *
+from .exiting import *
 from .main import *
 from .note import *
 from .onoffbuttons import *
 from .openmodal import *
 from .scopes import *
 from .wingrid import *
-from .exiting import *
-
 
 clientside_callback(
     """async function (_) {
@@ -43,7 +42,7 @@ clientside_callback(
         groupBySettings = document.getElementById('groupBySettings')
         quickSearch = document.getElementById('quickSearch')
         quickSearchReceiver = document.getElementById('quickSearchReceiver')
-        
+
         esc_trigger = document.getElementById('esc_trigger')
 
         noteEditor = CodeMirror(noteEditorContainer, {
@@ -65,20 +64,21 @@ clientside_callback(
         make_note(%d)
         make_quicksearch()
         make_markable()
-        
+
         make_esc_trigger()
-        
+
         document.documentElement.setAttribute("data-bs-theme", %r)
 
         return window.dash_clientside.no_update
-    }""" % (
+    }"""
+    % (
         config.startup.disable_copy_paste,
-        int(config.notes.file_drop_cloner and config.notes.file_drop_cloner != '0'),
-        ("dark" if config.ui.color_theme == "dark" else "light")
+        int(config.notes.file_drop_cloner and config.notes.file_drop_cloner != "0"),
+        ("dark" if config.ui.color_theme == "dark" else "light"),
     ),
     Output(layout.init_done_trigger, "id"),
     Input(layout.init_done_trigger, "n_clicks"),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
 
 
@@ -86,4 +86,5 @@ clientside_callback(
     Output(layout.init_trigger, "n_clicks"),
     Input(layout.init_trigger, "id"),
 )
-def init(_): return 1
+def init(_) -> int:
+    return 1

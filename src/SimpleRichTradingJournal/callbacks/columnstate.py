@@ -1,7 +1,6 @@
-from dash import callback, Output, Input, State, no_update
-
 import __env__
 import layout
+from dash import Input, Output, State, callback, no_update
 
 from ..config import config
 
@@ -13,7 +12,7 @@ if config.log.column_state_cache:
         Output(layout.colstate_done_trigger, "n_clicks", allow_duplicate=True),
         Input(layout.init_done_trigger2, "n_clicks"),
         State(layout.tradinglog, "columnDefs"),
-        config_prevent_initial_callbacks=True
+        config_prevent_initial_callbacks=True,
     )
     def init(n, col_defs):
         if __env__.iniColumnState and __env__.COLUMN_CACHE_DATA:
@@ -28,15 +27,14 @@ if config.log.column_state_cache:
                     except KeyError:
                         pass
             return __env__.COLUMN_CACHE_DATA, col_defs, 1
-        else:
-            return no_update, no_update, 1
+        return no_update, no_update, 1
 
     @callback(
         Output(layout.colstate_done_trigger, "id"),
         State(layout.colstate_done_trigger, "n_clicks"),
         Input(layout.tradinglog, "dashGridOptions"),
         Input(layout.tradinglog, "columnState"),
-        config_prevent_initial_callbacks=True
+        config_prevent_initial_callbacks=True,
     )
     def call(n, grid_opts, _state):
         if n:
@@ -48,7 +46,7 @@ if config.log.column_state_cache:
     Output(layout.tradinglog, "columnDefs", allow_duplicate=True),
     Output(layout.tradinglog, "resetColumnState"),
     Input(layout.header.reset_columns_button, "n_clicks"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
 def reset(_):
     __env__.dump_column_state(None)

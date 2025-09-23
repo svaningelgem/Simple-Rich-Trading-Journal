@@ -1,4 +1,3 @@
-
 def symbol_call(update_object: dict) -> None:
     # Is called when the cells of columns `Name`, `Symbol`, `ISIN`, `Type`, `Short`, `Sector` or `Category` are edited.
     # Receives the object `cellValueChanged` (see https://dash.plotly.com/dash-ag-grid/editing-and-callbacks).

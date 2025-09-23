@@ -1,6 +1,4 @@
-from dash import html, dcc
-
-import __env__
+from dash import dcc, html
 
 from ..config import config
 
@@ -10,16 +8,12 @@ autocdropdown = dcc.Dropdown(
         "position": "absolute",
         "zIndex": -3,
         "width": 280,
-
     },
     optionHeight=20,
     maxHeight=config.ui.grid.row3_height,
-    className="autocdropdown"
+    className="autocdropdown",
 )
 
 autoctrigger = dcc.Input(id="autoCTrigger", style={"display": "none"})
 
-COMPONENTS = html.Div([
-    autocdropdown,
-    autoctrigger
-])
+COMPONENTS = html.Div([autocdropdown, autoctrigger])

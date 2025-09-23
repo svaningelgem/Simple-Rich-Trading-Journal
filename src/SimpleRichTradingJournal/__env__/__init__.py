@@ -1,41 +1,41 @@
+import contextlib
 import pickle
+import sys
 import webbrowser
 from argparse import Namespace
 from ast import literal_eval
 from datetime import datetime
-from importlib import util, reload
+from importlib import reload, util
 from multiprocessing import Process
-from os import environ, mkdir, symlink, scandir, remove, listdir, system, getpid, kill
+from os import environ, getpid, kill, listdir, mkdir, remove, scandir, symlink, system
 from pathlib import Path
-from re import finditer, search, DOTALL
+from re import DOTALL, finditer, search
 from signal import SIGTERM
 from time import time
 from urllib.parse import unquote
 from urllib.request import urlopen
 
-# New config system imports
-from config.loader import init_config, get_config
-import config.loader as config
-
 import __ini__.cmdl
 import __ini__.logtags
-from . import plugin, _upgrade, _files
-from .rconfig import *
+import config.loader as config
+
+# New config system imports
+from config.loader import get_config, init_config
 from things import make_assets
+
+from . import _files, _upgrade, plugin
+from .rconfig import *
 
 
 def _upgrade_profile(
-        profile_path: str,
-        rc: bool = False,
-        colors: bool = False,
-        plugins: bool = False,
-        things: bool = False,
+    profile_path: str,
+    rc: bool = False,
+    colors: bool = False,
+    plugins: bool = False,
+    things: bool = False,
 ):
-    print(__ini__.logtags.profile_make, profile_path)
-    try:
+    with contextlib.suppress(FileExistsError):
         mkdir(profile_path)
-    except FileExistsError:
-        pass
 
     if rc:
         profile_rc = _files.make_path(profile_path, _files.inactive_prefix + _files.file_rc)
@@ -52,32 +52,28 @@ def _upgrade_profile(
         with open(_files.make_path(_files.env, _files.file_plugin)) as _if, open(profile_plugin, "w") as _of:
             _of.write(_if.read())
 
-    try:
+    with contextlib.suppress(FileExistsError):
         mkdir(_files.make_path(profile_path, _files.folder_profile_assets))
-    except FileExistsError:
-        pass
-    try:
+    with contextlib.suppress(FileExistsError):
         mkdir(_files.make_path(profile_path, _files.folder_profile_assets, _files.folder_file_clones))
-    except FileExistsError:
-        pass
-    try:
+    with contextlib.suppress(FileExistsError):
         mkdir(_files.make_path(profile_path, _files.folder_trash))
-    except FileExistsError:
-        pass
 
     with open(_files.make_path(profile_path, _files.file_clean_time), "w") as f:
         f.write(str(int(time())))
 
-    def make_thing():
+    def make_thing() -> None:
         symlink(file.path, dst)
 
     if things:
-        def remake_thing():
+
+        def remake_thing() -> None:
             remove(dst)
             make_thing()
 
     else:
-        def remake_thing():
+
+        def remake_thing() -> None:
             pass
 
     make_assets()
@@ -92,7 +88,6 @@ def _upgrade_profile(
 
 
 def _make_profile(profile_path: str, force: bool = False):
-    print(__ini__.logtags.profile_make, profile_path)
     try:
         mkdir(profile_path)
     except FileExistsError:
@@ -102,30 +97,24 @@ def _make_profile(profile_path: str, force: bool = False):
     return _upgrade_profile(profile_path)
 
 
-def _upgrade_root(profiles_home: str):
+def _upgrade_root(profiles_home: str) -> None:
     _call_gui = _files.make_path(profiles_home, _files.file_call_gui)
     with open(_files.make_path(_files.env, _files.file_call_gui), "rb") as _if:
         __call_gui = _if.read()
         if Path(_call_gui).exists():
-            if input(
-                    f"{__ini__.logtags.upgrade} file exists: {_call_gui}\n"
-                    f"Overwrite? > "
-            ).lower() in ("1", "y", "yes"):
+            if input(f"{__ini__.logtags.upgrade} file exists: {_call_gui}\nOverwrite? > ").lower() in ("1", "y", "yes"):
                 bu_file = _call_gui + "-srtj-lt0.5-backup.txt"
-                print(__ini__.logtags.upgrade, "create backup:", f"{bu_file}")
                 with open(bu_file, "wb") as _of:
                     _of.write(__call_gui)
-                print(__ini__.logtags.upgrade, "overwrite:", _call_gui)
             else:
-                return print(__ini__.logtags.upgrade, "skip:", _call_gui)
+                pass
         with open(_call_gui, "wb") as _of:
             _of.write(__call_gui)
 
 
-def _install(profiles_root: str):
+def _install(profiles_root: str) -> None:
     global __profiles_home__
     __profiles_home__ = _files.make_path(profiles_root, _files.profiles_home_folder)
-    print(__ini__.logtags.install, "@", __profiles_home__)
     _make_profile(__profiles_home__)
 
     with open(_files.profiles_home_path_file, "w") as f:
@@ -134,23 +123,20 @@ def _install(profiles_root: str):
     _upgrade_root(__profiles_home__)
 
 
-def _autoclean(journal_data):
+def _autoclean(journal_data) -> None:
     t = int(time())
     __file_clean_time = _files.make_path(__profile_folder__, _files.file_clean_time)
-    print(__ini__.logtags.cleaner, "load:", __file_clean_time)
     with open(__file_clean_time) as __f:
         clean_time = int(__f.read())
     remain = (clean_time + config.maintenance.autoclean_interval_s) - t
-    print(__ini__.logtags.cleaner, f"{remain=}s")
     if remain <= 0:
         with open(__file_clean_time, "w") as __f:
             __f.write(str(t))
 
         journal_datas = [journal_data]
 
-        def scan_for_globals(attr_name, default_is_glob):
+        def scan_for_globals(attr_name, default_is_glob) -> None:
             gval = globals()[attr_name]
-            print(__ini__.logtags.cleaner, "scan for globals:", attr_name, "is", repr(gval))
             if gval == "global":
                 for profile in scandir(__profiles_home__):
                     if profile.name.startswith(_files.profile_prefix):
@@ -162,15 +148,11 @@ def _autoclean(journal_data):
                         except AttributeError:
                             is_glob = default_is_glob
                         if is_glob:
-                            print(__ini__.logtags.cleaner, "scan for globals/add:", profile.name)
                             with open(_files.make_path(__profiles_home__, profile.name), "rb") as f:
                                 journal_datas.append(pickle.load(f))
 
         if fileclones := listdir(FILE_CLONES):
-            scan_for_globals(
-                f"{noteFileDropCloner=}".split("=")[0],
-                noteFileDropCloner == "global"
-            )
+            scan_for_globals(f"{noteFileDropCloner=}".split("=")[0], noteFileDropCloner == "global")
             for data in journal_datas:
                 for row in data:
                     if note := row.get("Note"):
@@ -187,26 +169,22 @@ def _autoclean(journal_data):
             else:
                 trash = _files.make_path(__profile_folder__, _files.folder_trash)
 
-            print(__ini__.logtags.cleaner, "flush trash @", trash)
             for e in listdir(trash):
                 remove(_files.make_path(trash, e))
 
             if noteFileDropClonerFlushTrashing:
-                print(__ini__.logtags.cleaner, "trashing:", fileclones)
                 for fileclone in fileclones:
                     with open(path := _files.make_path(FILE_CLONES, fileclone), "rb") as _if:
                         with open(_files.make_path(trash, fileclone), "wb") as _of:
                             _of.write(_if.read())
                     remove(path)
             else:
-                print(__ini__.logtags.cleaner, "flushing:", fileclones)
                 for fileclone in fileclones:
                     remove(_files.make_path(FILE_CLONES, fileclone))
 
         journal_datas = [journal_data]
         scan_for_globals(
-            f"{statisticsUsePositionColorCache=}".split("=")[0],
-            statisticsUsePositionColorCache == "global"
+            f"{statisticsUsePositionColorCache=}".split("=")[0], statisticsUsePositionColorCache == "global"
         )
         ids = set()
         id_fields = ("Name", "Symbol", "Type", "Sector", "Category")
@@ -216,12 +194,10 @@ def _autoclean(journal_data):
                     ids.add(row.get(field))
         with open(COLOR_CACHE, "rb") as f:
             _color_cache = pickle.load(f)
-        color_cache = dict()
+        color_cache = {}
         for _id in ids:
-            try:
+            with contextlib.suppress(KeyError):
                 color_cache[_id] = _color_cache[_id]
-            except KeyError:
-                pass
         with open(COLOR_CACHE, "wb") as f:
             pickle.dump(color_cache, f)
 
@@ -240,28 +216,26 @@ def _initialize_config() -> None:
     try:
         # Initialize config with profile folder
         config.init(profile_folder=__profile_folder__ if __profile_folder__ else None)
-        print(__ini__.logtags.profile_load, "config loaded successfully")
 
         # Set up storage adapter
-        from ..storage import StorageFactory, StorageAdapter
+        from ..storage import StorageAdapter, StorageFactory
+
         storage_config = {
-            'backend': config.storage.backend,
-            'connection_string': config.storage.connection_string,
-            'table_prefix': config.storage.table_prefix,
-            'file_path': __profile_folder__ or _files.default_install_root
+            "backend": config.storage.backend,
+            "connection_string": config.storage.connection_string,
+            "table_prefix": config.storage.table_prefix,
+            "file_path": __profile_folder__ or _files.default_install_root,
         }
         storage_adapter = StorageAdapter(StorageFactory.create(storage_config))
-    except Exception as e:
-        print(__ini__.logtags.error, f"Config initialization failed: {e}")
+    except Exception:
         raise
 
 
-def _load_profile(profile):
+def _load_profile(profile) -> None:
     global __profile_folder__, PROFILE
     if profile:
         PROFILE = profile
         __profile_folder__ = _files.make_path(__profiles_home__, _files.profile_prefix + profile)
-        print(__ini__.logtags.profile_load, profile, "@", __profile_folder__)
     else:
         __profile_folder__ = __profiles_home__
     if not Path(__profile_folder__).exists():
@@ -269,7 +243,6 @@ def _load_profile(profile):
 
     # Load legacy RC files if they exist
     if (p := Path(_files.make_path(__profile_folder__, _files.file_rc))).exists():
-        print(__ini__.logtags.profile_load, p)
         spec = util.spec_from_file_location("rc", p)
         _rc = util.module_from_spec(spec)
         spec.loader.exec_module(_rc)
@@ -279,7 +252,6 @@ def _load_profile(profile):
             _globals[attr] = getattr(_rc, attr)
 
     if (p := Path(_files.make_path(__profile_folder__, _files.file_plugin))).exists():
-        print(__ini__.logtags.profile_load, p)
         spec = util.spec_from_file_location("plugin", p)
         _plugin = util.module_from_spec(spec)
         spec.loader.exec_module(_plugin)
@@ -289,12 +261,11 @@ def _load_profile(profile):
             setattr(plugin, attr, getattr(_plugin, attr))
 
 
-def _cmdline():
+def _cmdline() -> None:
     if __ini__.cmdl.DIRECTIVES:
         if len(__ini__.cmdl.DIRECTIVES) == 1:
             _load_profile(__ini__.cmdl.DIRECTIVES[0])
         else:
-            print(__ini__.logtags.cmdl, "parse:", __ini__.cmdl.DIRECTIVES)
             _config_key = __ini__.cmdl.DIRECTIVES.pop(0)
             if _config_key == "/":
                 _load_profile(__ini__.cmdl.DIRECTIVES.pop(0))
@@ -308,7 +279,9 @@ def _cmdline():
                 elif (_attrt := type(_attr := getattr(rconfig, _config_key))) is list:
                     _arg = __ini__.cmdl.DIRECTIVES.pop(0)
                     if not _arg.startswith("["):
-                        raise ValueError(f"{_config_key!r} requires a value of type <list> whose pattern corresponds to [1, 2, ...]. {_arg!r} is received.")
+                        raise ValueError(
+                            f"{_config_key!r} requires a value of type <list> whose pattern corresponds to [1, 2, ...]. {_arg!r} is received."
+                        )
                     while not _arg.endswith("]"):
                         _arg += __ini__.cmdl.DIRECTIVES.pop(0)
                     _globals[_config_key] = literal_eval(_arg)
@@ -357,53 +330,47 @@ try:
                 _upgrade.call(__profile, __env)
                 _upgrade_profile(__profile, True, True, True, True)
             _upgrade_root(__profiles_home__)
-            exit()
+            sys.exit()
         elif __ini__.cmdl.DIRECTIVES and __ini__.cmdl.DIRECTIVES[0] == "/":
             _profile_folder = _files.make_path(__profiles_home__, _files.profile_prefix + __ini__.cmdl.DIRECTIVES[1])
         else:
             _profile_folder = __profiles_home__
         if __ini__.cmdl.DIRECTIVES:
             rc = colors = plugins = things = False
-            try:
+            with contextlib.suppress(ValueError):
                 rc = __ini__.cmdl.DIRECTIVES.remove("rc")
-            except ValueError:
-                pass
-            try:
+            with contextlib.suppress(ValueError):
                 colors = __ini__.cmdl.DIRECTIVES.remove("colors")
-            except ValueError:
-                pass
-            try:
+            with contextlib.suppress(ValueError):
                 plugins = __ini__.cmdl.DIRECTIVES.remove("plugins")
-            except ValueError:
-                pass
-            try:
+            with contextlib.suppress(ValueError):
                 things = __ini__.cmdl.DIRECTIVES.remove("things")
-            except ValueError:
-                pass
         else:
             rc = colors = plugins = things = True
         _upgrade_profile(_profile_folder, rc, colors, plugins, things)
-        exit()
+        sys.exit()
     elif __ini__.cmdl.DIRECTIVES[0] == "help":
         with open(rconfig.__file__) as f:
-            print(str().join(f.read().splitlines(keepends=True)[1:]))
-        exit()
+            pass
+        sys.exit()
     elif __ini__.cmdl.DIRECTIVES[0] == "version":
         from .. import __version__
-        exit(__version__)
+
+        sys.exit(__version__)
 except IndexError:
     pass
 
 # Load profile and initialize config
 _load_profile(None)
-try:
+with contextlib.suppress(KeyError):
     _load_profile(environ["SRTJ"])
-except KeyError:
-    pass
 _cmdline()
 
 # Initialize configuration system
+import sys
+
 from ..config import config
+
 _initialize_config()
 
 # Set up URL and other path-dependent variables
@@ -411,11 +378,9 @@ URL = f"http://{config.app.host}:{config.app.port}"
 PONG_URL = _files.make_path(URL, _files.folder_profile_assets, _files.file_pong)
 
 
-def make_pong_file(server_pid):
+def make_pong_file(server_pid) -> None:
     with open(_files.make_path(__profile_folder__, _files.folder_profile_assets, _files.file_pong), "w") as f:
-        f.write(f"[{PROFILE}]\n"
-                f"main    : {getpid()}\n"
-                f"server  : {server_pid}")
+        f.write(f"[{PROFILE}]\nmain    : {getpid()}\nserver  : {server_pid}")
 
 
 def ping() -> bytes | bool:
@@ -429,30 +394,25 @@ def ping() -> bytes | bool:
 def _kill():
     if __ping := ping():
         ___ping = __ping.splitlines()[1:]
-        __main = int(___ping[0].split(b':')[1].strip())
-        __server = int(___ping[1].split(b':')[1].strip())
+        __main = int(___ping[0].split(b":")[1].strip())
+        __server = int(___ping[1].split(b":")[1].strip())
         kill(__server, SIGTERM)
         kill(__main, SIGTERM)
         return __ping
-    else:
-        return False
+    return False
 
 
 if __ini__.cmdl.FLAGS.ping:
     if __ping := ping():
-        print(__ping.decode())
-        exit()
+        sys.exit()
     else:
-        print(__ini__.logtags.ping_fail, PONG_URL)
-        exit(1)
+        sys.exit(1)
 
 elif __ini__.cmdl.FLAGS.kill:
     if __ping := _kill():
-        print(__ini__.logtags.kill, __ping.decode())
-        exit()
+        sys.exit()
     else:
-        print(__ini__.logtags.ping_fail, PONG_URL)
-        exit(1)
+        sys.exit(1)
 
 # Set up path variables based on config
 DASH_ASSETS = _files.make_path(__profile_folder__, "files")
@@ -477,7 +437,9 @@ else:
     COLUMN_SETTINGS = _files.make_path(__profiles_home__, _files.file_column_settings)
 
 # Set up date/time formats
-dateFormat = {"ISO 8601": "ydm", "american": "mdy", "international": "dmy"}.get(config.ui.date_format, config.ui.date_format)
+dateFormat = {"ISO 8601": "ydm", "american": "mdy", "international": "dmy"}.get(
+    config.ui.date_format, config.ui.date_format
+)
 timeFormatTransaction, timeFormatHistory, timeFormatDaterange, timeFormatLastCalc = {
     "ydm": ("%y/%d/%m %H:%M", "\u2007\u2007%a. %y/%d/%m %H:%M.%S", "YY/DD/MM", "%y / %d / %m"),
     "mdy": ("%m/%d/%y %H:%M", "\u2007\u2007%a. %m/%d/%y %H:%M.%S", "MM/DD/YY", "%m / %d / %y"),
@@ -528,9 +490,10 @@ else:
 #     sideInitStatisticValue = 0
 
 # Set up position color cache
-_colorCache = dict()
-if config.statistics.use_position_color_cache and config.statistics.use_position_color_cache != '0':
-    def _dump_color_cache():
+_colorCache = {}
+if config.statistics.use_position_color_cache and config.statistics.use_position_color_cache != "0":
+
+    def _dump_color_cache() -> None:
         with open(COLOR_CACHE, "wb") as __f:
             pickle.dump(_colorCache, __f)
 
@@ -540,8 +503,10 @@ if config.statistics.use_position_color_cache and config.statistics.use_position
     except FileNotFoundError:
         _dump_color_cache()
 else:
-    def _dump_color_cache():
+
+    def _dump_color_cache() -> None:
         pass
+
 
 _colorPalette = config.themes.color_palette_positions.copy()
 
@@ -565,7 +530,7 @@ def get_position_color(__key):
 COLUMN_CACHE_DATA: list[dict] | None = None
 
 
-def dump_column_state(data):
+def dump_column_state(data) -> None:
     global COLUMN_CACHE_DATA
     COLUMN_CACHE_DATA = data
     with open(COLUMN_CACHE, "wb") as __f:
@@ -574,7 +539,9 @@ def dump_column_state(data):
 
 # Initialize column state cache
 # TODO --> This should not be saved in a pickle file, but in the database.
-if columnStateCache := (config.log.column_state_cache and config.log.column_state_cache != '0' and not __ini__.cmdl.FLAGS.debug):
+if columnStateCache := (
+    config.log.column_state_cache and config.log.column_state_cache != "0" and not __ini__.cmdl.FLAGS.debug
+):
     _column_settings_data = [
         config.log.col_order_asset_id,
         config.log.col_order_note,
@@ -595,111 +562,125 @@ if columnStateCache := (config.log.column_state_cache and config.log.column_stat
         dump_column_state(None)
 
 # Set up cell renderers
-cellRendererChangeTakeAmount = ({"cellRenderer": "agAnimateShowChangeCellRenderer"} if config.log.cell_renderer_change.take_amount else {})
-cellRendererChangeTakeCourse = ({"cellRenderer": "agAnimateShowChangeCellRenderer"} if config.log.cell_renderer_change.take_course else {})
-cellRendererChangePerformance = ({"cellRenderer": "agAnimateShowChangeCellRenderer"} if config.log.cell_renderer_change.performance else {})
-cellRendererChangeProfit = ({"cellRenderer": "agAnimateShowChangeCellRenderer"} if config.log.cell_renderer_change.profit else {})
+cellRendererChangeTakeAmount = (
+    {"cellRenderer": "agAnimateShowChangeCellRenderer"} if config.log.cell_renderer_change.take_amount else {}
+)
+cellRendererChangeTakeCourse = (
+    {"cellRenderer": "agAnimateShowChangeCellRenderer"} if config.log.cell_renderer_change.take_course else {}
+)
+cellRendererChangePerformance = (
+    {"cellRenderer": "agAnimateShowChangeCellRenderer"} if config.log.cell_renderer_change.performance else {}
+)
+cellRendererChangeProfit = (
+    {"cellRenderer": "agAnimateShowChangeCellRenderer"} if config.log.cell_renderer_change.profit else {}
+)
 
 nStatisticsDrag = len(set(config.statistics.performance.order))
 
 # Write CSS file
 with open(_files.make_path(DASH_ASSETS, _files.file_rc_css), "w") as f:
     cont = "/* [do not change] this file is created by `rc' */\n"
-    cont += """
+    cont += f"""
 /* agGrid Input color > */
-.%s input[class^=ag-] {
-  color: %s !important;
-}
+.{config.themes.table_theme} input[class^=ag-] {{
+  color: {config.themes.main.table_fg_main} !important;
+}}
 /* < agGrid Input color */
-""" % (config.themes.table_theme, config.themes.main.table_fg_main)
+"""
 
     if config.ui.use_default_alt_colors:
-        cont += """
+        cont += f"""
 /* agGrid alt colors > */
-.ag-alt-colors {
-    --ag-value-change-delta-down-color: %s !important;
-    --ag-value-change-delta-up-color: %s !important;
-}
+.ag-alt-colors {{
+    --ag-value-change-delta-down-color: {config.themes.alt.neg} !important;
+    --ag-value-change-delta-up-color: {config.themes.alt.pos} !important;
+}}
 /* < agGrid alt colors */
-""" % (config.themes.alt.neg, config.themes.alt.pos)
+"""
 
-    cont += """
+    cont += f"""
 /* dataTable hover bg > */
-.dt-table-container__row-1 .cell-table tbody tr:hover td {
-  background-color: %s !important;
-}
+.dt-table-container__row-1 .cell-table tbody tr:hover td {{
+  background-color: {config.themes.balance.hover_bg} !important;
+}}
 /* < dataTable hover bg */
-""" % config.themes.balance.hover_bg
+"""
 
-    cont += """
+    cont += f"""
 /* notepaper > */
-.notepaper a {
-  color: %s !important;
-}
+.notepaper a {{
+  color: {config.themes.notepaper.link} !important;
+}}
 /* < notepaper */
-""" % config.themes.notepaper.link
+"""
 
     cont += """
 /* note editor > */
-.CodeMirror {
-  height: 100%%;
-  width: 100%%;
-  background-color: %s;
-}
-.CodeMirror-gutters {
-  background-color: %s;
-}
+.CodeMirror {{
+  height: 100%;
+  width: 100%;
+  background-color: {};
+}}
+.CodeMirror-gutters {{
+  background-color: {};
+}}
 /* < note editor */
-""" % (
-        config.themes.notebook.bg + (config.themes.notebook.def_transparency if config.notes.editor_default_transparency else ""),
-        config.themes.notebook.gutter_bg + (config.themes.notebook.def_gutter_transparency if config.notes.editor_default_transparency else ""),
+""".format(
+        config.themes.notebook.bg
+        + (config.themes.notebook.def_transparency if config.notes.editor_default_transparency else ""),
+        config.themes.notebook.gutter_bg
+        + (config.themes.notebook.def_gutter_transparency if config.notes.editor_default_transparency else ""),
     )
 
-    if config.ui.checkbox_long_short_styling and config.ui.checkbox_long_short_styling != '0':
+    if config.ui.checkbox_long_short_styling and config.ui.checkbox_long_short_styling != "0":
         cont += """
 /* Short > */
-.ag-checkbox-input-wrapper.ag-indeterminate::before {
+.ag-checkbox-input-wrapper.ag-indeterminate::before {{
   border-width: 0 !important;
-}
-.ag-checkbox-input-wrapper.ag-indeterminate::after {
+}}
+.ag-checkbox-input-wrapper.ag-indeterminate::after {{
   color: transparent !important;
-}
-.ag-checkbox-input-wrapper.ag-checked::before {
-  border: solid %s;
+}}
+.ag-checkbox-input-wrapper.ag-checked::before {{
+  border: solid {};
   border-width: 0 3px 3px 0;
   display: inline-block;
   margin: 3px;
   transform: rotate(45deg);
   -webkit-transform: rotate(45deg);
   opacity: 0.5 !important;
-}
-.ag-checkbox-input-wrapper.ag-checked::after {
+}}
+.ag-checkbox-input-wrapper.ag-checked::after {{
   color: transparent !important;
-}
-.ag-checkbox-input-wrapper::before {
- %s border: solid %s;
+}}
+.ag-checkbox-input-wrapper::before {{
+ {} border: solid {};
   border-width: 0 3px 3px 0;
   display: inline-block;
   margin: 3px;
   transform: rotate(-135deg);
   -webkit-transform: rotate(-135deg);
   opacity: 0.5 !important;
-}
-.ag-checkbox-input-wrapper::after {
+}}
+.ag-checkbox-input-wrapper::after {{
   color: transparent !important;
-}
-.ag-theme-balham, .ag-theme-balham-dark, .ag-theme-balham-auto-dark {
+}}
+.ag-theme-balham, .ag-theme-balham-dark, .ag-theme-balham-auto-dark {{
   --ag-checkbox-border-radius: 10px !important;
   --ag-checkbox-background-color: transparent !important;
-}
+}}
 /* < Short */
-""" % (config.themes.cell_values.neg, ("//" if config.ui.checkbox_long_short_styling == "s" else ""), config.themes.cell_values.pos)
+""".format(
+            config.themes.cell_values.neg,
+            ("//" if config.ui.checkbox_long_short_styling == "s" else ""),
+            config.themes.cell_values.pos,
+        )
 
-    cont += """
+    cont += f"""
 /* Row Mark > */
-.row-mark::before {
+.row-mark::before {{
   content: "";
-  background-color: %s;
+  background-color: {config.themes.row_mark};
   display: block;
   position: absolute;
   top: 0;
@@ -707,27 +688,30 @@ with open(_files.make_path(DASH_ASSETS, _files.file_rc_css), "w") as f:
   right: 0;
   bottom: 0;
   pointer-events: none;
-}
+}}
 /* < Row Mark */
-""" % config.themes.row_mark
+"""
     f.write(cont)
 
 # Footer live signal
 _idx = 0
+
 
 def get_footer_live_signal():
     global _idx
     _idx += 1
     if _idx % 2:
         return {"borderTop": "1px solid " + config.themes.footer.sig2}
-    else:
-        return {"borderTop": "1px solid " + config.themes.footer.sig1}
+    return {"borderTop": "1px solid " + config.themes.footer.sig1}
 
-_d = dict()
+
+_d = {}
 
 if config.startup.disable_footer_life_signal:
+
     def get_footer_live_signal():
         return _d
+
 
 # Scope settings
 if config.scope.strict_scope_by_both:
@@ -736,9 +720,9 @@ else:
     scope_by_both = "or"
 
 # Data initialization
-JOURNAL_DATA: list[dict] = list()
-HISTORY_DATA: dict = dict()
-HISTORY_KEYS_X_TIME_REVSORT: list[tuple[int, int]] = list()
+JOURNAL_DATA: list[dict] = []
+HISTORY_DATA: dict = {}
+HISTORY_KEYS_X_TIME_REVSORT: list[tuple[int, int]] = []
 LAST_HISTORY_CREATION_TIME: int = 0
 
 JOURNAL = _files.make_path(__profile_folder__, _files.file_journal)
@@ -746,34 +730,30 @@ HISTORY = _files.make_path(__profile_folder__, _files.file_history)
 
 pickleProtocol = config.storage.pickle_protocol
 
+
 def _init_data():
     global JOURNAL_DATA, HISTORY_DATA, HISTORY_KEYS_X_TIME_REVSORT, LAST_HISTORY_CREATION_TIME
     __firstrun = [{"id": 0, "n": 0, "InvestTime": datetime.now().strftime(timeFormatTransaction), "InvestAmount": 1}]
     t = int(time())
     try:
-        print(__ini__.logtags.profile_init, "journal/load:", JOURNAL)
         with open(JOURNAL, "rb") as __f:
             JOURNAL_DATA = pickle.load(__f)
     except FileNotFoundError:
-        print(__ini__.logtags.profile_init, "journal/first run:", __firstrun)
         JOURNAL_DATA = __firstrun
         storage_adapter.dump_journal(JOURNAL_DATA)
     try:
-        print(__ini__.logtags.profile_init, "history/load:", HISTORY)
         with open(HISTORY, "rb") as __f:
             HISTORY_DATA = pickle.load(__f)
     except FileNotFoundError:
-        print(__ini__.logtags.profile_init, "history/first run:", __firstrun)
         HISTORY_DATA = {i: {"time": i, "data": __firstrun} for i in range(config.maintenance.n_history_slots)}
 
-    print(__ini__.logtags.profile_init, "plugin/call")
     do_dump = plugin.init_log(JOURNAL_DATA)
     make_hist = plugin.init_history(HISTORY_DATA)
 
-    HISTORY_KEYS_X_TIME_REVSORT = list((k, v["time"]) for k, v in HISTORY_DATA.items())
+    HISTORY_KEYS_X_TIME_REVSORT = [(k, v["time"]) for k, v in HISTORY_DATA.items()]
     HISTORY_KEYS_X_TIME_REVSORT.sort(key=lambda x: x[1], reverse=True)
 
-    def make_history():
+    def make_history() -> None:
         global LAST_HISTORY_CREATION_TIME
         LAST_HISTORY_CREATION_TIME = t
         HISTORY_DATA[HISTORY_KEYS_X_TIME_REVSORT[-1][0]] = {"time": LAST_HISTORY_CREATION_TIME, "data": JOURNAL_DATA}
@@ -781,37 +761,32 @@ def _init_data():
             pickle.dump(HISTORY_DATA, __f, pickleProtocol)
 
     if do_dump:
-        print(__ini__.logtags.profile_init, "plugin/journal -> dump")
         storage_adapter.dump_journal(JOURNAL_DATA)
         make_history()
     elif make_hist:
-        print(__ini__.logtags.profile_init, "plugin/history -> dump")
         with open(HISTORY, "wb") as __f:
             pickle.dump(HISTORY_DATA, __f, pickleProtocol)
     else:
         newest_backup = HISTORY_DATA[HISTORY_KEYS_X_TIME_REVSORT[0][0]]["data"]
 
         if len(JOURNAL_DATA) != len(newest_backup):
-            print(__ini__.logtags.profile_init, "history/n-entries -> create+dump")
             make_history()
-            return
+            return None
 
         initdata = JOURNAL_DATA.copy()
         initdata.sort(key=lambda x: x["id"])
         newest_backup.sort(key=lambda x: x["id"])
         comp_keys = ("id", "Name", "n", "InvestTime", "InvestAmount", "TakeTime", "TakeAmount", "ITC", "Note")
 
-        for ini, bku in zip(initdata, newest_backup):
+        for ini, bku in zip(initdata, newest_backup, strict=False):
             if tuple(ini.get(k) for k in comp_keys) != tuple(bku.get(k) for k in comp_keys):
-                print(__ini__.logtags.profile_init, "history/cell-contents -> create+dump")
                 make_history()
-                return
-
-        print(__ini__.logtags.profile_init, "history -> no changes")
+                return None
 
     LAST_HISTORY_CREATION_TIME = HISTORY_DATA[HISTORY_KEYS_X_TIME_REVSORT[0][0]]["time"]
 
     return JOURNAL_DATA
+
 
 if config.plugins.quick_disable:
     reload(plugin)
@@ -821,17 +796,17 @@ _autoclean(JOURNAL_DATA)
 
 SERVER_PROC: Process
 
-CALL_GUI = lambda: None
+
+def CALL_GUI() -> None:
+    return None
 
 
-def _parse_call_gui():
+def _parse_call_gui() -> None:
     global CALL_GUI
     with open(_files.make_path(__profiles_home__, _files.file_call_gui)) as f:
         content = f.read()
 
-    if start_section := search(
-            "(?:(?:\n|^)\\[start])(((?!\n\\[).)*)", content, DOTALL
-    ):
+    if start_section := search("(?:(?:\n|^)\\[start])(((?!\n\\[).)*)", content, DOTALL):
         proc = None
         for line in start_section.group(1).splitlines():
             line = line.strip()
@@ -841,17 +816,15 @@ def _parse_call_gui():
 
         if proc == "*none":
             return
-        elif proc == "*pop":
-            def CALL_GUI():
-                dwb = webbrowser.get()
-                print(__ini__.logtags.call_gui, "*pop using:", URL, "->", dwb.name, dwb.args, flush=True)
+        if proc == "*pop":
+
+            def CALL_GUI() -> None:
+                webbrowser.get()
                 webbrowser.open_new_tab(URL)
 
             CALL_GUI = CALL_GUI
         elif proc:
-            if params_section := search(
-                    f"(?:(?:\n|^)\\[start\\.{proc}\\.params])(((?!\n\\[).)*)", content, DOTALL
-            ):
+            if params_section := search(f"(?:(?:\n|^)\\[start\\.{proc}\\.params])(((?!\n\\[).)*)", content, DOTALL):
                 for line in params_section.group(1).splitlines():
                     line = line.strip()
                     if line and not line.startswith("#"):
@@ -859,20 +832,15 @@ def _parse_call_gui():
 
                 proc = proc.format(
                     **(
-                            globals()
-                            | {
-                                "*url": URL,
-                                "*profile-root": __profile_folder__,
-                                "*user-home": Path.home().__str__()
-                            }
+                        globals()
+                        | {"*url": URL, "*profile-root": __profile_folder__, "*user-home": Path.home().__str__()}
                     ),
                 )
 
             else:
                 proc += f" {URL}"
 
-            def CALL_GUI():
-                print(__ini__.logtags.call_gui, "using:", proc, flush=True)
+            def CALL_GUI() -> None:
                 system(proc)
 
             CALL_GUI = CALL_GUI

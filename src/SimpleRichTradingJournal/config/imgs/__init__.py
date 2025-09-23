@@ -9,14 +9,9 @@ here = __path__[0]
 def _html_img(src):
     asset = Path(__file__).parent.resolve() / f"../../things/assets/{src}"
 
-    data = b"data:image/png;base64," + base64.b64encode(asset.read_bytes())
+    data = "data:image/png;base64," + base64.b64encode(asset.read_bytes()).decode("utf-8")
 
-    return html.Img(
-        src=data,
-        style={
-            "height": 11
-        }
-    )
+    return html.Img(src=data, style={"height": 11})
 
 
 cross = _html_img("cross.png")

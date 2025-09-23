@@ -1,19 +1,18 @@
 from json import loads
-from urllib.request import urlopen
 from traceback import print_exception
+from urllib.request import urlopen
 
-from dash import html, dcc
+import __env__
+from dash import dcc, html
 
 from .. import __version__
-import __env__
-import __ini__.logtags
-from ..config import imgs
-
-from ..config import config
+from ..config import config, imgs
 
 _url_version = "https://pypi.python.org/pypi/SimpleRichTradingJournal/json"
-_url_about =  "https://raw.githubusercontent.com/Simple-Rich-Trading-Journal/Simple-Rich-Trading-Journal/master/src/SimpleRichTradingJournal/ABOUT.md"
-_url_update = "https://raw.githubusercontent.com/Simple-Rich-Trading-Journal/Simple-Rich-Trading-Journal/master/UPDATE.md"
+_url_about = "https://raw.githubusercontent.com/Simple-Rich-Trading-Journal/Simple-Rich-Trading-Journal/master/src/SimpleRichTradingJournal/ABOUT.md"
+_url_update = (
+    "https://raw.githubusercontent.com/Simple-Rich-Trading-Journal/Simple-Rich-Trading-Journal/master/UPDATE.md"
+)
 
 _alt_about = __env__._files.proj_root + "/ABOUT.md"
 
@@ -22,7 +21,6 @@ try:
         about = u.read().decode()
 except Exception as e:
     print_exception(e)
-    print(__ini__.logtags.error, "The above exception occurred during the about query.")
     with open(_alt_about) as f:
         about = "*\n\n" + f.read()
 
@@ -41,12 +39,10 @@ try:
                 update_note = u.read().decode()
         except Exception as e:
             print_exception(e)
-            print(__ini__.logtags.error, "The above exception occurred during the update note query.")
     else:
         about_button_color = config.themes.cell_posvalue
 except Exception as e:
     print_exception(e)
-    print(__ini__.logtags.error, "The above exception occurred during the version query.")
     update_note = f"An error occurred during the version query: **{e}**"
 
 about = about.format(version=__version__, update_header=update_header, update_note=update_note)
@@ -67,7 +63,7 @@ about_button = html.Button(
         "paddingRight": "10px",
         "borderRadius": "15px",
         "opacity": 0.7,
-    }
+    },
 )
 
 
@@ -94,8 +90,8 @@ MODAL = html.Div(
         "color": config.themes.table_fg_main,
         "padding": 10,
         "borderRadius": 10,
-        "overflow": "scroll"
-    }
+        "overflow": "scroll",
+    },
 )
 
 COMPONENTS = MODAL

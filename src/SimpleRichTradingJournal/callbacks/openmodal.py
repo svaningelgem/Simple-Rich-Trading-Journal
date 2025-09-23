@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from dash import callback, Output, Input, State, callback_context
-
 import layout
 from config import styles
-
+from dash import Input, Output, State, callback, callback_context
 
 layer_open = layout.modal.modal_layer.style | {"zIndex": 99}
 layer_close = layout.modal.modal_layer.style | {"zIndex": -3}
@@ -25,7 +23,7 @@ exiting_close = layout.exiting.MODAL.style | {"zIndex": -3}
     Output(layout.modal.modal_layer, "style", allow_duplicate=True),
     Output(layout.modal.close_button, "style", allow_duplicate=True),
     Input(layout.about.about_button, "n_clicks"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
 def open_about_modal(_):
     return about_open, layer_open, button_open
@@ -36,7 +34,7 @@ def open_about_modal(_):
     Output(layout.modal.modal_layer, "style", allow_duplicate=True),
     Output(layout.modal.close_button, "style", allow_duplicate=True),
     Input(layout.header.history_button, "n_clicks"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
 def open_backup_modal(_):
     return history_open, layer_open, button_open
@@ -47,7 +45,7 @@ def open_backup_modal(_):
     Output(layout.modal.modal_layer, "style", allow_duplicate=True),
     Output(layout.modal.close_button, "style", allow_duplicate=True),
     Input(layout.statistics_pop_trigger, "n_clicks"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
 def statistics_pop_modal(_):
     return statistics_pop_open, layer_open, button_open
@@ -58,7 +56,7 @@ def statistics_pop_modal(_):
     Output(layout.modal.modal_layer, "style", allow_duplicate=True),
     Output(layout.modal.close_button, "style", allow_duplicate=True),
     Input(layout.exiting_modal_trigger, "n_clicks"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
 def exiting_modal(_):
     return exiting_open, layer_open, button_open
@@ -74,7 +72,7 @@ def exiting_modal(_):
     Input(layout.modal.modal_layer, "n_clicks"),
     Input(layout.modal.close_button, "n_clicks"),
     Input(layout.esc_trigger, "value"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
 def close(*_):
     return history_close, about_close, statistics_pop_close, exiting_close, layer_close, button_close
@@ -91,7 +89,7 @@ def close(*_):
     State(layout.statistics.framing_settings, "style"),
     State(layout.statistics.group_by_button, "style"),
     State(layout.statistics.framing_button, "style"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
 def open_group_by(g_n, f_n, g_style, f_style, g_b_style, f_b_style):
     if callback_context.triggered_id == layout.statistics.framing_button.id:

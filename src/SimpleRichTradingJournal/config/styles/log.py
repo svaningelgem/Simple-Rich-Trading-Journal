@@ -1,5 +1,3 @@
-import __env__
-
 from ...config import config
 
 undefined = {"color": config.themes.mark_gray}
@@ -9,11 +7,23 @@ name_row_mark = {"fontWeight": "bold", "backgroundColor": config.themes.row_mark
 name = {"backgroundColor": config.themes.col_name}
 name_finalized_trade = name | {}
 name_undefined = name | {"borderLeft": "8px solid " + config.themes.mark_undefined} | undefined
-name_DEPOSIT_tag = name | {"color": config.themes.record_deposit, "borderLeft": "1px solid " + config.themes.record_deposit}
-name_PAYOUT_tag = name | {"color": config.themes.record_payout, "borderLeft": "1px solid " + config.themes.record_payout}
+name_DEPOSIT_tag = name | {
+    "color": config.themes.record_deposit,
+    "borderLeft": "1px solid " + config.themes.record_deposit,
+}
+name_PAYOUT_tag = name | {
+    "color": config.themes.record_payout,
+    "borderLeft": "1px solid " + config.themes.record_payout,
+}
 name_ITC_tag = name | {"color": config.themes.record_itc, "borderLeft": "1px solid " + config.themes.record_itc}
-name_dividend = name | {"color": config.themes.record_dividend, "borderLeft": "1px solid " + config.themes.record_dividend}
-name_opentrade = name | {"color": config.themes.record_opentrade, "borderLeft": "1px solid " + config.themes.record_opentrade}
+name_dividend = name | {
+    "color": config.themes.record_dividend,
+    "borderLeft": "1px solid " + config.themes.record_dividend,
+}
+name_opentrade = name | {
+    "color": config.themes.record_opentrade,
+    "borderLeft": "1px solid " + config.themes.record_opentrade,
+}
 name_has_note = name | {"borderRight": "3px solid " + config.themes.mark_note}
 name_has_dividend = name | {"borderLeft": "2px solid " + config.themes.record_dividend}
 

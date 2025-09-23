@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 def make_path(*elem):
-    return str("/").join(elem)
+    return "/".join(elem)
 
 
 file_rc = "rconfig.py"
@@ -23,14 +23,14 @@ file_rc_css = ".rc.css"
 file_rc_js = ".rc.js"
 file_favicon = ".favicon.ico"
 file_pong = ".pong"
-userhome = str(Path.home())
-default_install_root = userhome
-proj_root = str(Path(__file__).parent.parent)
-proj_things = make_path(proj_root, "things")
-proj_things_assets = make_path(proj_things, "assets")
-proj_things_js = make_path(proj_things_assets, ".misc.js")
-proj_things_css = make_path(proj_things_assets, ".misc.css")
-env = make_path(proj_root, "__env__")
+userhome: Path = Path.home()
+default_install_root: Path = userhome
+proj_root: Path = Path(__file__).parent.parent
+proj_things: Path = proj_root / "things"
+proj_things_assets: Path = proj_things / "assets"
+proj_things_js: Path = proj_things_assets / ".misc.js"
+proj_things_css: Path = proj_things_assets / ".misc.css"
+env: Path = proj_root / "__env__"
 profiles_home_folder = "Trading-Journals.srtj"
 profile_prefix = "%"
-profiles_home_path_file = make_path(userhome, ".srtj")
+profiles_home_path_file = userhome / ".srtj"

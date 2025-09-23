@@ -1,7 +1,5 @@
-from dash import html
-
-import __env__
 from config import imgs, styles
+from dash import html
 
 from ..config import config
 
@@ -18,15 +16,7 @@ MODAL = html.Div(
             id="exit_modal_body_",
         ),
         html.Hr(),
-        html.Div(
-            exit_modal_button := html.Button(
-                "Ok",
-                id="exit_modal_button_",
-                style={
-
-                } | styles.misc.term_button
-            )
-        )
+        html.Div(exit_modal_button := html.Button("Ok", id="exit_modal_button_", style={} | styles.misc.term_button)),
     ],
     id="exit_modal_",
     style={
@@ -39,8 +29,8 @@ MODAL = html.Div(
         "color": config.themes.table_fg_main,
         "padding": 10,
         "borderRadius": 10,
-        "overflow": "scroll"
-    }
+        "overflow": "scroll",
+    },
 )
 
 exit_button = html.Button(
@@ -59,6 +49,4 @@ exit_button = html.Button(
     },
 )
 
-COMPONENTS = html.Div([
-    MODAL
-])
+COMPONENTS = html.Div([MODAL])

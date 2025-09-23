@@ -1,53 +1,49 @@
 from __future__ import annotations
 
+import contextlib
 import json
 from datetime import datetime, timedelta
 from json import loads
-from sys import stderr
 from traceback import print_exception
 
-import plotly.graph_objects as go
-from dash import callback, Output, Input, State, no_update
-from dash import callback_context
-
 import __env__
-import __ini__.logtags
 import layout
+import plotly.graph_objects as go
 from calc.log import LogCalc, TradeFrameCalc
 from calc.utils import do_add_row
+from dash import Input, Output, State, callback, callback_context, no_update
+
 from ..config import config
 
 __lc__: LogCalc | TradeFrameCalc
 
 
-_group_by_trigger_ids = tuple(i.id for i in layout.statistics._group_by_checks) + (layout.drag_event_receiver2.id,)
+_group_by_trigger_ids = (*tuple(i.id for i in layout.statistics._group_by_checks), layout.drag_event_receiver2.id)
 
 
 def _group_by(
-        i_drag_event_receiver2_value,
-        i_group_by_type,
-        i_group_by_short,
-        i_group_by_sector,
-        i_group_by_category,
-        i_group_by_id,
+    i_drag_event_receiver2_value,
+    i_group_by_type,
+    i_group_by_short,
+    i_group_by_sector,
+    i_group_by_category,
+    i_group_by_id,
 ):
     if i_drag_event_receiver2_value:
         drag_event_receiver_ = loads(i_drag_event_receiver2_value)
-        order = list(i.split("-")[1] for i in drag_event_receiver_["target_children"])
+        order = [i.split("-")[1] for i in drag_event_receiver_["target_children"]]
         order.reverse()
     else:
         order = layout.statistics._group_by_default_order.copy()
     for attr, val in (
-            ("Short", i_group_by_short),
-            ("Type", i_group_by_type),
-            ("Sector", i_group_by_sector),
-            ("Category", i_group_by_category),
+        ("Short", i_group_by_short),
+        ("Type", i_group_by_type),
+        ("Sector", i_group_by_sector),
+        ("Category", i_group_by_category),
     ):
         if not val:
-            try:
+            with contextlib.suppress(ValueError):
                 order.remove(attr)
-            except ValueError:
-                pass
     if not i_group_by_id:
         try:
             order.remove("Name")
@@ -57,30 +53,36 @@ def _group_by(
 
 
 def new_side(
-        group_by,
-        i_group_by_type,
-        i_group_by_short,
-        i_group_by_sector,
-        i_group_by_category,
-        i_group_by_id,
-        i_group_by_show_all,
-        scope_by_attr,
-        i_performance_steps_value,
-        i_performance_trailing_frame_value,
-        i_performance_trailing_interval_value,
-        i_performance_range_value,
-        i_hypothesis_per_day_value,
-        i_drag_event_receiver_value,
-        i_performance_size_slider_value,
-        i_Y_trigger_,
-        i_Q_trigger_,
-        i_T_trigger_,
-        i_C_trigger_,
-        i_STATISTICS_style,
-        i_BALANCE_style,
+    group_by,
+    i_group_by_type,
+    i_group_by_short,
+    i_group_by_sector,
+    i_group_by_category,
+    i_group_by_id,
+    i_group_by_show_all,
+    scope_by_attr,
+    i_performance_steps_value,
+    i_performance_trailing_frame_value,
+    i_performance_trailing_interval_value,
+    i_performance_range_value,
+    i_hypothesis_per_day_value,
+    i_drag_event_receiver_value,
+    i_performance_size_slider_value,
+    i_Y_trigger_,
+    i_Q_trigger_,
+    i_T_trigger_,
+    i_C_trigger_,
+    i_STATISTICS_style,
+    i_BALANCE_style,
 ):
-    o_open_positions_graph_figure = o_all_positions_graph_figure = o_performance_graph_figure = o_BALANCE_children = o_drag_container_style = no_update
-    layout.make.positions.OBJ.new(__lc__, _group_by(group_by, i_group_by_type, i_group_by_short, i_group_by_sector, i_group_by_category, i_group_by_id), bool(i_group_by_show_all))
+    o_open_positions_graph_figure = o_all_positions_graph_figure = o_performance_graph_figure = o_BALANCE_children = (
+        o_drag_container_style
+    ) = no_update
+    layout.make.positions.OBJ.new(
+        __lc__,
+        _group_by(group_by, i_group_by_type, i_group_by_short, i_group_by_sector, i_group_by_category, i_group_by_id),
+        bool(i_group_by_show_all),
+    )
     layout.make.performance.OBJ.new(
         __lc__,
         scope_by_attr,
@@ -96,19 +98,29 @@ def new_side(
         order = tuple(int(i.split("-")[1]) for i in drag_event_receiver_["target_children"])
         order = tuple(order.index(i) + 1 for i in range(1, __env__.nStatisticsDrag + 1))
         layout.make.performance.OBJ.opt__order(order)
-    o_drag_container_style = layout.statistics.drag_container.style | {"height": "%dpx" % i_performance_size_slider_value}
+    o_drag_container_style = layout.statistics.drag_container.style | {
+        "height": "%dpx" % i_performance_size_slider_value
+    }
     layout.make.balance.OBJ.new(__lc__, scope_by_attr, i_Y_trigger_, i_Q_trigger_, i_T_trigger_, i_C_trigger_)
     if i_STATISTICS_style:
         o_open_positions_graph_figure, o_all_positions_graph_figure = layout.make.positions.OBJ.get()
-        o_performance_graph_figure = layout.make.performance.OBJ.get().update_layout(height=i_performance_size_slider_value)
+        o_performance_graph_figure = layout.make.performance.OBJ.get().update_layout(
+            height=i_performance_size_slider_value
+        )
     elif i_BALANCE_style:
         o_BALANCE_children = layout.make.balance.OBJ.get()
-    return o_open_positions_graph_figure, o_all_positions_graph_figure, o_performance_graph_figure, o_BALANCE_children, o_drag_container_style
+    return (
+        o_open_positions_graph_figure,
+        o_all_positions_graph_figure,
+        o_performance_graph_figure,
+        o_BALANCE_children,
+        o_drag_container_style,
+    )
 
 
 s_auto_save_on = layout.header.auto_save_button.style | styles.misc.autosave_on
 s_auto_save_off = layout.header.auto_save_button.style | styles.misc.autosave_off
-Output(layout.summary_footer, "style", allow_duplicate=True),
+(Output(layout.summary_footer, "style", allow_duplicate=True),)
 s_summary_error = layout.summary_footer.style | styles.misc.summary_error
 s_summary_error_reset = layout.summary_footer.style | styles.misc.summary_error_reset
 
@@ -182,54 +194,54 @@ s_summary_error_reset = layout.summary_footer.style | styles.misc.summary_error_
     [Input(i, "value") for i in layout.statistics._group_by_checks],
     Input(layout.statistics.show_all, "value"),
     Input(layout.quick_search_receiver, "value"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
 def call(
-        _,
-        i_backup_list_value,
-        i_tradinglog_rowData,
-        i_tradinglog_cellValueChanged,
-        i_tradinglog_dashGridOptions,
-        i_daterange_start_date,
-        i_daterange_end_date,
-        i_with_open_value,
-        i_renderer_trigger_n_clicks,
-        i_auto_save_n_clicks,
-        i_open_positions_graph_figure,
-        i_all_positions_graph_figure,
-        i_performance_graph_figure,
-        i_pop_open_positions_n_clicks,
-        i_pop_all_positions_n_clicks,
-        i_pop_performance_n_clicks,
-        i_performance_size_slider_value,
-        i_performance_steps_value,
-        i_performance_trailing_frame_value,
-        i_performance_trailing_interval_value,
-        i_performance_range_value,
-        i_performance_hypothesis_per_value,
-        i_drag_event_receiver_value,
-        i_pop_graph_figure,
-        i_pop_size_slider_value,
-        i_STATISTICS_style,
-        i_BALANCE_style,
-        i_T_trigger_,
-        i_C_trigger_,
-        i_Y_trigger_,
-        i_Q_trigger_,
-        i_index_by_button_n_clicks,
-        i_index_by_button_style,
-        i_scope_by_button_n_clicks,
-        i_scope_by_button_style,
-        i_drag_event_receiver2_value,
-        i_edit_event_receiver_value,
-        i_statistics_pop_trigger_n_clicks,
-        i_group_by_short,
-        i_group_by_type,
-        i_group_by_sector,
-        i_group_by_category,
-        i_group_by_id,
-        i_group_by_show_all,
-        i_quick_search_receiver_value,
+    _,
+    i_backup_list_value,
+    i_tradinglog_rowData,
+    i_tradinglog_cellValueChanged,
+    i_tradinglog_dashGridOptions,
+    i_daterange_start_date,
+    i_daterange_end_date,
+    i_with_open_value,
+    i_renderer_trigger_n_clicks,
+    i_auto_save_n_clicks,
+    i_open_positions_graph_figure,
+    i_all_positions_graph_figure,
+    i_performance_graph_figure,
+    i_pop_open_positions_n_clicks,
+    i_pop_all_positions_n_clicks,
+    i_pop_performance_n_clicks,
+    i_performance_size_slider_value,
+    i_performance_steps_value,
+    i_performance_trailing_frame_value,
+    i_performance_trailing_interval_value,
+    i_performance_range_value,
+    i_performance_hypothesis_per_value,
+    i_drag_event_receiver_value,
+    i_pop_graph_figure,
+    i_pop_size_slider_value,
+    i_STATISTICS_style,
+    i_BALANCE_style,
+    i_T_trigger_,
+    i_C_trigger_,
+    i_Y_trigger_,
+    i_Q_trigger_,
+    i_index_by_button_n_clicks,
+    i_index_by_button_style,
+    i_scope_by_button_n_clicks,
+    i_scope_by_button_style,
+    i_drag_event_receiver2_value,
+    i_edit_event_receiver_value,
+    i_statistics_pop_trigger_n_clicks,
+    i_group_by_short,
+    i_group_by_type,
+    i_group_by_sector,
+    i_group_by_category,
+    i_group_by_id,
+    i_group_by_show_all,
+    i_quick_search_receiver_value,
 ):
     global __lc__
 
@@ -311,7 +323,7 @@ def call(
             o_init_done_trigger2_n_clicks,
         )
 
-    def set_auto_save(on: int):
+    def set_auto_save(on: int) -> None:
         nonlocal o_auto_save_n_clicks, o_auto_save_style, i_auto_save_n_clicks
         if on:
             i_auto_save_n_clicks = o_auto_save_n_clicks = 1
@@ -320,7 +332,7 @@ def call(
             i_auto_save_n_clicks = o_auto_save_n_clicks = 0
             o_auto_save_style = s_auto_save_off
 
-    def timeframe():
+    def timeframe() -> None:
         global __lc__
         nonlocal i_daterange_end_date, o_tradinglog_rowData, o_summary_footer_children, o_renderer_trigger_n_clicks
         if not i_daterange_start_date:
@@ -331,14 +343,23 @@ def call(
             end = datetime.now()
         else:
             end = datetime.strptime(i_daterange_end_date, "%Y-%m-%d") + timedelta(1)
-        __lc__ = __lc__.getTradeFrame(start, end, by_attr=scope_by_attr, name_filter=i_quick_search_receiver_value, ui=True)
+        __lc__ = __lc__.getTradeFrame(
+            start, end, by_attr=scope_by_attr, name_filter=i_quick_search_receiver_value, ui=True
+        )
         o_tradinglog_rowData = __lc__.__get_sorted_log_json__()
         o_summary_footer_children = layout.make.make_footer(__lc__)
         o_renderer_trigger_n_clicks = i_renderer_trigger_n_clicks + 1
 
-    def new_table(row_data: list):
+    def new_table(row_data: list) -> None:
         global __lc__
-        nonlocal o_tradinglog_rowData, o_daterange_min_date_allowed, o_daterange_max_date_allowed, o_daterange_initial_visible_month, o_summary_footer_children, o_summary_footer_style, o_renderer_trigger_n_clicks
+        nonlocal \
+            o_tradinglog_rowData, \
+            o_daterange_min_date_allowed, \
+            o_daterange_max_date_allowed, \
+            o_daterange_initial_visible_month, \
+            o_summary_footer_children, \
+            o_summary_footer_style, \
+            o_renderer_trigger_n_clicks
 
         __lc__ = LogCalc(row_data)
         __lc__.set_parameter(i_index_by_button_n_clicks, i_with_open_value)
@@ -357,11 +378,11 @@ def call(
             o_summary_footer_children = layout.make.make_footer(__lc__)
             o_renderer_trigger_n_clicks = i_renderer_trigger_n_clicks + 1
 
-    def save():
+    def save() -> None:
         if i_auto_save_n_clicks:
             __env__.storage_adapter.dump_journal(__lc__.__mainFrame__.__get_log_json__())
 
-    def set_index_by():
+    def set_index_by() -> None:
         nonlocal o_index_by_button_style, o_index_by_button_children, o_scope_by_button_style
         if i_index_by_button_n_clicks:
             o_index_by_button_style = i_index_by_button_style | styles.misc.by_taketime_on
@@ -372,7 +393,7 @@ def call(
         if i_scope_by_button_n_clicks:
             o_scope_by_button_style = o_index_by_button_style
 
-    def set_scope_by():
+    def set_scope_by() -> None:
         nonlocal o_scope_by_button_style, o_scope_by_button_children
         if i_scope_by_button_n_clicks:
             o_scope_by_button_style = i_scope_by_button_style | i_index_by_button_style
@@ -381,13 +402,20 @@ def call(
             o_scope_by_button_style = i_scope_by_button_style | styles.misc.by_index_off
             o_scope_by_button_children = "Scope\u2007by\u2007Both\u2007"
 
-    def newside():
-        nonlocal o_open_positions_graph_figure, o_all_positions_graph_figure, o_performance_graph_figure, o_BALANCE_children, o_drag_container_style
-        (o_open_positions_graph_figure,
-         o_all_positions_graph_figure,
-         o_performance_graph_figure,
-         o_BALANCE_children,
-         o_drag_container_style) = new_side(
+    def newside() -> None:
+        nonlocal \
+            o_open_positions_graph_figure, \
+            o_all_positions_graph_figure, \
+            o_performance_graph_figure, \
+            o_BALANCE_children, \
+            o_drag_container_style
+        (
+            o_open_positions_graph_figure,
+            o_all_positions_graph_figure,
+            o_performance_graph_figure,
+            o_BALANCE_children,
+            o_drag_container_style,
+        ) = new_side(
             i_drag_event_receiver2_value,
             i_group_by_type,
             i_group_by_short,
@@ -408,7 +436,7 @@ def call(
             i_T_trigger_,
             i_C_trigger_,
             i_STATISTICS_style,
-            i_BALANCE_style
+            i_BALANCE_style,
         )
 
     try:
@@ -426,7 +454,7 @@ def call(
             if config.startup.flush_open_take_amount:
                 _course_call = config.plugins.course_call
 
-                def course_call(row, _):
+                def course_call(row, _) -> bool:
                     row.pop("TakeAmount", None)
                     row.pop("TakeCourse", None)
                     return True
@@ -474,11 +502,12 @@ def call(
                 if i_BALANCE_style:
                     o_BALANCE_children = layout.make.balance.OBJ.get()
                 elif i_STATISTICS_style:
-                    o_performance_graph_figure = layout.make.performance.OBJ.get().update_layout(height=i_performance_size_slider_value)
+                    o_performance_graph_figure = layout.make.performance.OBJ.get().update_layout(
+                        height=i_performance_size_slider_value
+                    )
 
         # calc with
         elif __trigger__ == layout.header.with_open_trigger.id:
-
             __lc__.set_parameter(None, i_with_open_value)
             o_tradinglog_rowTransaction = {"update": [d.data for d in __lc__.frame_deposits]}
 
@@ -500,8 +529,8 @@ def call(
         # table edit
         elif __trigger__ == layout.tradinglog.id:
             if i_tradinglog_cellValueChanged:
-                o_tradinglog_rowTransaction = dict()
-                added = list()
+                o_tradinglog_rowTransaction = {}
+                added = []
                 edit_item = __lc__.edit(i_tradinglog_cellValueChanged[0])
                 if edit_item.added:
                     added = edit_item.added
@@ -525,15 +554,19 @@ def call(
             update["new_row"] = json.loads(update["new_row"])
             update["old_row"] = json.loads(update["old_row"])
             colid = update.get("colId")
-            o_tradinglog_rowTransaction = dict()
-            added = list()
+            o_tradinglog_rowTransaction = {}
+            added = []
             if colid:
-                edit_item = __lc__.edit({"colId": colid, "data": update["new_row"], "oldValue": update["old_row"].get(colid)})
+                edit_item = __lc__.edit(
+                    {"colId": colid, "data": update["new_row"], "oldValue": update["old_row"].get(colid)}
+                )
             else:
                 edit_item = __lc__.update(update["new_row"], update["old_row"])
             if edit_item.added:
                 added = edit_item.added
-            if ((not colid) and (update["new_row"]["id"] in (0, len(__lc__.__mainFrame__) - 1))) or do_add_row(i_tradinglog_rowData):
+            if ((not colid) and (update["new_row"]["id"] in (0, len(__lc__.__mainFrame__) - 1))) or do_add_row(
+                i_tradinglog_rowData
+            ):
                 added.append(__lc__.new_row().row_dat)
             if added:
                 o_tradinglog_rowTransaction = {"add": added, "addIndex": 0}
@@ -551,13 +584,24 @@ def call(
         elif __trigger__ in (layout.balance.BALANCE.id, layout.statistics.STATISTICS.id):
             if i_STATISTICS_style:
                 o_open_positions_graph_figure, o_all_positions_graph_figure = layout.make.positions.OBJ.get()
-                o_performance_graph_figure = layout.make.performance.OBJ.get().update_layout(height=i_performance_size_slider_value)
+                o_performance_graph_figure = layout.make.performance.OBJ.get().update_layout(
+                    height=i_performance_size_slider_value
+                )
             elif i_BALANCE_style:
                 o_BALANCE_children = layout.make.balance.OBJ.get()
 
         # group by
         elif __trigger__ in _group_by_trigger_ids:
-            layout.make.positions.OBJ.opt__group_by(_group_by(i_drag_event_receiver2_value, i_group_by_type, i_group_by_short, i_group_by_sector, i_group_by_category, i_group_by_id))
+            layout.make.positions.OBJ.opt__group_by(
+                _group_by(
+                    i_drag_event_receiver2_value,
+                    i_group_by_type,
+                    i_group_by_short,
+                    i_group_by_sector,
+                    i_group_by_category,
+                    i_group_by_id,
+                )
+            )
             o_open_positions_graph_figure, o_all_positions_graph_figure = layout.make.positions.OBJ.get()
 
         elif __trigger__ in layout.statistics.show_all.id:
@@ -565,7 +609,13 @@ def call(
             o_open_positions_graph_figure, o_all_positions_graph_figure = layout.make.positions.OBJ.get()
 
         # performance trailing
-        elif __trigger__ in (layout.statistics.performance_hypothesis_per.id, layout.statistics.performance_steps.id, layout.statistics.performance_trailing_frame.id, layout.statistics.performance_trailing_interval.id, layout.statistics.performance_range.id):
+        elif __trigger__ in (
+            layout.statistics.performance_hypothesis_per.id,
+            layout.statistics.performance_steps.id,
+            layout.statistics.performance_trailing_frame.id,
+            layout.statistics.performance_trailing_interval.id,
+            layout.statistics.performance_range.id,
+        ):
             layout.make.performance.OBJ.opt__trailing(
                 timedelta(weeks=i_performance_steps_value),
                 timedelta(weeks=i_performance_trailing_frame_value),
@@ -574,7 +624,9 @@ def call(
                 "Day" in i_performance_hypothesis_per_value,
             )
             if i_STATISTICS_style:
-                o_performance_graph_figure = layout.make.performance.OBJ.get().update_layout(height=i_performance_size_slider_value)
+                o_performance_graph_figure = layout.make.performance.OBJ.get().update_layout(
+                    height=i_performance_size_slider_value
+                )
 
         # performance graph drag
         elif __trigger__ == layout.drag_event_receiver.id:
@@ -583,12 +635,18 @@ def call(
                 order = tuple(int(i.split("-")[1]) for i in drag_event_receiver_["target_children"])
                 order = tuple(order.index(i) + 1 for i in range(1, __env__.nStatisticsDrag + 1))
                 layout.make.performance.OBJ.opt__order(order)
-                o_performance_graph_figure = layout.make.performance.OBJ.get().update_layout(height=i_performance_size_slider_value)
+                o_performance_graph_figure = layout.make.performance.OBJ.get().update_layout(
+                    height=i_performance_size_slider_value
+                )
 
         # performance graph size
         elif __trigger__ == layout.statistics.performance_size_slider.id:
-            o_performance_graph_figure = go.Figure(i_performance_graph_figure).update_layout(height=i_performance_size_slider_value)
-            o_drag_container_style = layout.statistics.drag_container.style | {"height": "%dpx" % i_performance_size_slider_value}
+            o_performance_graph_figure = go.Figure(i_performance_graph_figure).update_layout(
+                height=i_performance_size_slider_value
+            )
+            o_drag_container_style = layout.statistics.drag_container.style | {
+                "height": "%dpx" % i_performance_size_slider_value
+            }
 
         # pop graph size
         elif __trigger__ == layout.statistics.pop_size_slider.id:
@@ -617,13 +675,17 @@ def call(
             o_pop_title_children = "Performance"
 
         # balance scopes
-        elif __trigger__ in (layout.balance.Y_trigger_.id, layout.balance.Q_trigger_.id, layout.balance.T_trigger_.id, layout.balance.C_trigger_.id):
+        elif __trigger__ in (
+            layout.balance.Y_trigger_.id,
+            layout.balance.Q_trigger_.id,
+            layout.balance.T_trigger_.id,
+            layout.balance.C_trigger_.id,
+        ):
             layout.make.balance.OBJ.opt__visible(i_Y_trigger_, i_Q_trigger_, i_T_trigger_, i_C_trigger_)
             o_BALANCE_children = layout.make.balance.OBJ.get()
 
     except Exception as e:
         print_exception(e)
-        print(__ini__.logtags.error, e, flush=True, file=stderr)
         o_summary_footer_style = s_summary_error
         o_tradinglog_rowTransaction = no_update
     else:

@@ -1,27 +1,30 @@
-from dash import html, dcc
-
 import __env__
 from config import styles
 from config.functional import performance_trailing
+from dash import dcc, html
 
 from ..config import config
 
-POP = html.Div([
-    html.Div([
-        html.Div([
-            pop_title := html.H4(id="pop_title_", style={"display": "inline-block", "width": "15%"}),
-            html.Div(
-                pop_size_slider := dcc.Slider(**styles.figures.size_slider_kwargs_pop, id="pop_size_slider_"),
-                style={"display": "inline-block", "width": "85%"}
-            )
-        ],
-            style={"width": "100%", "display": "flex"}
-        )
-    ]),
-    html.Div([
-        pop_graph := dcc.Graph(id="pop_graph_")
-    ])
-],
+POP = html.Div(
+    [
+        html.Div(
+            [
+                html.Div(
+                    [
+                        pop_title := html.H4(id="pop_title_", style={"display": "inline-block", "width": "15%"}),
+                        html.Div(
+                            pop_size_slider := dcc.Slider(
+                                **styles.figures.size_slider_kwargs_pop, id="pop_size_slider_"
+                            ),
+                            style={"display": "inline-block", "width": "85%"},
+                        ),
+                    ],
+                    style={"width": "100%", "display": "flex"},
+                )
+            ]
+        ),
+        html.Div([pop_graph := dcc.Graph(id="pop_graph_")]),
+    ],
     id="pop_modal",
     style={
         "position": "absolute",
@@ -35,20 +38,18 @@ POP = html.Div([
         "color": config.themes.table_fg_main,
         "padding": 10,
         "borderRadius": 10,
-        "overflow": "scroll"
-    }
+        "overflow": "scroll",
+    },
 )
 
-_dragcontainer = list()
-_dragcontainer_ids = list()
+_dragcontainer = []
+_dragcontainer_ids = []
 for i in config.statistics().performance.order:
     if i not in _dragcontainer_ids:
         _dragcontainer_ids.append(i)
         _dragcontainer.append(
             html.Div(
-                [
-                    html.Div("☰", style={"border": "1px solid", "width": "5240%", "height": "100%"})
-                ],
+                [html.Div("☰", style={"border": "1px solid", "width": "5240%", "height": "100%"})],
                 id=f"drag_component-{i}",
                 style={
                     "height": f"calc(100% / {__env__.nStatisticsDrag})",
@@ -56,25 +57,25 @@ for i in config.statistics().performance.order:
                     "fontSize": "18px",
                     "borderRight": "1px solid",
                     "width": "100%",
-                }
+                },
             )
         )
 
 _dragcontainer2 = [None] * len(config.statistics.group_default)
-_dragcontainer2_unselect = list()
+_dragcontainer2_unselect = []
 _dragcontainer2_opts = (
-                           ({"label": "\u2007\u2007L/S", "value": "Short"}, config.log.col_widths[4]),
-                           ({"label": "\u2007\u2007Type", "value": "Type"}, config.log.col_widths[3]),
-                           ({"label": "\u2007\u2007Sector", "value": "Sector"}, config.log.col_widths[5]),
-                           ({"label": "\u2007\u2007Category", "value": "Category"}, config.log.col_widths[6]),
-                       ) + (
-                           ({"label": "\u2007\u2007Symbol", "value": "Symbol"}, 1)
-                           if config.statistics.id_by_symbol else
-                           ({"label": "\u2007\u2007Name", "value": "Name"}, 1),
-                       )
-_group_by_checks = list()
+    ({"label": "\u2007\u2007L/S", "value": "Short"}, config.log.col_widths[4]),
+    ({"label": "\u2007\u2007Type", "value": "Type"}, config.log.col_widths[3]),
+    ({"label": "\u2007\u2007Sector", "value": "Sector"}, config.log.col_widths[5]),
+    ({"label": "\u2007\u2007Category", "value": "Category"}, config.log.col_widths[6]),
+    ({"label": "\u2007\u2007Symbol", "value": "Symbol"}, 1)
+    if config.statistics.id_by_symbol
+    else ({"label": "\u2007\u2007Name", "value": "Name"}, 1),
+)
+_group_by_checks = []
 
-for i, p in zip(_dragcontainer2_opts, config.statistics.group_default):
+for i, p in zip(_dragcontainer2_opts, config.statistics.group_default, strict=False):
+
     def rec(selected):
         check = dcc.Checklist(
             [i[0]],
@@ -97,10 +98,9 @@ for i, p in zip(_dragcontainer2_opts, config.statistics.group_default):
                 "cursor": "row-resize",
                 "border": "1px solid",
                 "padding": 3,
-                "margin": 1
-            }
-        ), i[0]['value']
-
+                "margin": 1,
+            },
+        ), i[0]["value"]
 
     if p:
         _dragcontainer2[p - 1] = rec(True)
@@ -116,7 +116,7 @@ except ValueError:
 _dragcontainer2 = _dragcontainer2[:-1] + _dragcontainer2_unselect + _dragcontainer2[-1:]
 _dragcontainer2.reverse()
 
-_group_by_default_order = list(i[1] for i in _dragcontainer2)
+_group_by_default_order = [i[1] for i in _dragcontainer2]
 _group_by_default_order.reverse()
 
 group_by_settings = html.Div(
@@ -127,19 +127,19 @@ group_by_settings = html.Div(
             style={
                 "border": "1px solid",
                 "padding": 3,
-            }
+            },
         ),
         html.Div(
             show_all := dcc.Checklist(
                 [{"label": "\u2007\u2007show all", "value": True}],
                 value=[not config.statistics.use_sun_max_depth],
-                id="statisticsUseSunMaxDepth_"
+                id="statisticsUseSunMaxDepth_",
             ),
             style={
                 "padding": 6,
                 "borderBottom": "1px solid",
-            }
-        )
+            },
+        ),
     ],
     id="groupBySettings",
     style={
@@ -147,8 +147,8 @@ group_by_settings = html.Div(
         "zIndex": -3,
         "backgroundColor": config.themes.table_bg_main + "cc",
         "margin": 10,
-        "fontSize": 13
-    }
+        "fontSize": 13,
+    },
 )
 
 
@@ -156,13 +156,7 @@ framing_settings = html.Div(
     [
         html.Div(
             [
-                html.Div(
-                    "Main Scope",
-                    style={
-                        "position": "absolute",
-                        "marginTop": -16
-                    }
-                ),
+                html.Div("Main Scope", style={"position": "absolute", "marginTop": -16}),
                 performance_range := dcc.Slider(
                     marks=performance_trailing.performance_range,
                     step=None,
@@ -170,21 +164,11 @@ framing_settings = html.Div(
                     id="performance_range_",
                 ),
             ],
-            style={
-                "padding": 10,
-                "borderBottom": "1px solid",
-                "marginTop": 8
-            }
+            style={"padding": 10, "borderBottom": "1px solid", "marginTop": 8},
         ),
         html.Div(
             [
-                html.Div(
-                    "Calculating block frame",
-                    style={
-                        "position": "absolute",
-                        "marginTop": -16
-                    }
-                ),
+                html.Div("Calculating block frame", style={"position": "absolute", "marginTop": -16}),
                 performance_steps := dcc.Slider(
                     marks=performance_trailing.performance_steps,
                     step=None,
@@ -192,21 +176,11 @@ framing_settings = html.Div(
                     id="performance_steps_",
                 ),
             ],
-            style={
-                "padding": 10,
-                "borderBottom": "1px solid",
-                "marginTop": 8
-            }
+            style={"padding": 10, "borderBottom": "1px solid", "marginTop": 8},
         ),
         html.Div(
             [
-                html.Div(
-                    "Trailing (~) calculation block frame",
-                    style={
-                        "position": "absolute",
-                        "marginTop": -16
-                    }
-                ),
+                html.Div("Trailing (~) calculation block frame", style={"position": "absolute", "marginTop": -16}),
                 performance_trailing_frame := dcc.Slider(
                     marks=performance_trailing.performance_frame,
                     step=None,
@@ -214,21 +188,11 @@ framing_settings = html.Div(
                     id="performance_trailing_frame_",
                 ),
             ],
-            style={
-                "padding": 10,
-                "borderBottom": "1px solid",
-                "marginTop": 8
-            }
+            style={"padding": 10, "borderBottom": "1px solid", "marginTop": 8},
         ),
         html.Div(
             [
-                html.Div(
-                    "Trailing (~) calculation block interval",
-                    style={
-                        "position": "absolute",
-                        "marginTop": -16
-                    }
-                ),
+                html.Div("Trailing (~) calculation block interval", style={"position": "absolute", "marginTop": -16}),
                 performance_trailing_interval := dcc.Slider(
                     marks=performance_trailing.performance_interval,
                     step=None,
@@ -236,26 +200,22 @@ framing_settings = html.Div(
                     id="performance_trailing_interval_",
                 ),
             ],
-            style={
-                "padding": 10,
-                "borderBottom": "1px solid",
-                "marginTop": 8
-            }
+            style={"padding": 10, "borderBottom": "1px solid", "marginTop": 8},
         ),
         html.Div(
             [
                 performance_hypothesis_per := dcc.RadioItems(
                     ["\u2007Hypothesis/Day\u2007\u2007", "\u2007Hypothesis/Year\u2007\u2007"],
-                    value=("\u2007Hypothesis/Day\u2007\u2007" if config.statistics.performance.hypothesis_per_day else "\u2007Hypothesis/Year\u2007\u2007"),
+                    value=(
+                        "\u2007Hypothesis/Day\u2007\u2007"
+                        if config.statistics.performance.hypothesis_per_day
+                        else "\u2007Hypothesis/Year\u2007\u2007"
+                    ),
                     inline=True,
                     id="performance_hypothesis_per_",
                 ),
             ],
-            style={
-                "padding": 10,
-                "borderBottom": "1px solid",
-                "marginTop": 8
-            }
+            style={"padding": 10, "borderBottom": "1px solid", "marginTop": 8},
         ),
     ],
     id="framing_settings_",
@@ -265,157 +225,140 @@ framing_settings = html.Div(
         "backgroundColor": config.themes.table_bg_main + "cc",
         "margin": 10,
         "fontSize": 13,
-        "width": "var(--handle-xi)"
+        "width": "var(--handle-xi)",
     },
 )
 
 
-STATISTICS = html.Div([
-    html.Div([
-        html.H4("Statistics", style={"display": "inline-block"}),
+STATISTICS = html.Div(
+    [
+        html.Div(
+            [
+                html.H4("Statistics", style={"display": "inline-block"}),
+                html.Div(
+                    [
+                        html.Div(
+                            [
+                                group_by_button := html.Button(
+                                    "Group by ...",
+                                    id="group_by_button_",
+                                    n_clicks=0,
+                                    style={
+                                        "display": "inline-block",
+                                        "margin": "7px",
+                                        "fontSize": "13px",
+                                        "paddingLeft": "10px",
+                                        "paddingRight": "10px",
+                                    }
+                                    | styles.misc.group_by_options_off,
+                                ),
+                                framing_button := html.Button(
+                                    "Framing…",
+                                    id="framing_button_",
+                                    style={
+                                        "display": "inline-block",
+                                        "margin": "7px",
+                                        "fontSize": "13px",
+                                        "paddingLeft": "10px",
+                                        "paddingRight": "10px",
+                                    }
+                                    | styles.misc.framing_options_off,
+                                ),
+                                html.Div(
+                                    html.Div(
+                                        performance_size_slider := dcc.Slider(
+                                            **styles.figures.size_slider_kwargs_performance,
+                                            id="performance_size_slider_",
+                                            className="nopadding",
+                                        ),
+                                        style={"padding": "0px 10px", "paddingBottom": "5px", "width": 450}
+                                        | styles.misc.performance_size,
+                                    ),
+                                    style={"display": "inline-block"},
+                                ),
+                            ],
+                            style={"whiteSpace": "nowrap"},
+                        )
+                    ],
+                    style={"overflow": "hidden", "position": "absolute", "zIndex": 1, "display": "inline-block"},
+                    className="fill-available-width",
+                ),
+            ]
+        ),
+        group_by_settings,
+        framing_settings,
         html.Div(
             [
                 html.Div(
                     [
-                        group_by_button := html.Button(
-                            "Group by ...",
-                            id="group_by_button_",
+                        pop_open_positions := html.Div(
+                            [
+                                html.Span("⇱\u2007", style={"display": "inline-block", "fontSize": "16px"}),
+                                html.H6("Open Positions", style={"display": "inline-block"}),
+                            ],
+                            id="pop_open_positions_",
                             n_clicks=0,
-                            style={
-                                      "display": "inline-block",
-                                      "margin": "7px",
-                                      "fontSize": "13px",
-                                      "paddingLeft": "10px",
-                                      "paddingRight": "10px",
-                                  } | styles.misc.group_by_options_off
+                            style={"cursor": "pointer"},
                         ),
-                        framing_button := html.Button(
-                            "Framing…",
-                            id="framing_button_",
-                            style={
-                                      "display": "inline-block",
-                                      "margin": "7px",
-                                      "fontSize": "13px",
-                                      "paddingLeft": "10px",
-                                      "paddingRight": "10px",
-                                  } | styles.misc.framing_options_off
+                        open_positions_graph := dcc.Graph("open_positions_graph_", config={"displaylogo": False}),
+                    ],
+                    style={"width": "100%", "padding": "10px"},
+                ),
+                html.Div(
+                    [
+                        pop_all_positions := html.Div(
+                            [
+                                html.Span("⇱\u2007", style={"display": "inline-block", "fontSize": "16px"}),
+                                html.H6("Positions of Alltime", style={"display": "inline-block"}),
+                            ],
+                            id="pop_all_positions_",
+                            n_clicks=0,
+                            style={"cursor": "pointer"},
+                        ),
+                        all_positions_graph := dcc.Graph("all_positions_graph_", config={"displaylogo": False}),
+                    ],
+                    style={"width": "100%", "padding": "10px"},
+                ),
+                html.Div(
+                    [
+                        pop_performance := html.Div(
+                            [
+                                html.Span("⇱\u2007", style={"display": "inline-block", "fontSize": "16px"}),
+                                html.H6("Performance", style={"display": "inline-block"}),
+                            ],
+                            id="pop_performance_",
+                            n_clicks=0,
+                            style={"cursor": "pointer"},
                         ),
                         html.Div(
-                            html.Div(
-                                performance_size_slider := dcc.Slider(
-                                    **styles.figures.size_slider_kwargs_performance,
-                                    id="performance_size_slider_",
-                                    className="nopadding"
+                            [
+                                drag_container := html.Div(
+                                    _dragcontainer,
+                                    id="dragContainer",
+                                    style={
+                                        "display": "inline-block",
+                                        "width": "2%",
+                                        "height": "%dpx" % styles.figures.size_slider_kwargs_performance["value"],
+                                    },
                                 ),
-                                style={
-                                          "padding": "0px 10px",
-                                          "paddingBottom": "5px",
-                                          "width": 450
-                                      } | styles.misc.performance_size
-                            ),
-                            style={
-                                "display": "inline-block"
-                            }
-                        )
-                    ],
-                    style={
-                        "whiteSpace": "nowrap"
-                    }
-                )
-            ],
-            style={
-                "overflow": "hidden",
-                "position": "absolute",
-                "zIndex": 1,
-                "display": "inline-block"
-            },
-            className="fill-available-width"
-        ),
-    ]),
-    group_by_settings,
-    framing_settings,
-    html.Div(
-        [
-            html.Div(
-                [
-                    pop_open_positions := html.Div(
-                        [
-                            html.Span("⇱\u2007", style={"display": "inline-block", "fontSize": "16px"}),
-                            html.H6("Open Positions", style={"display": "inline-block"}),
-                        ],
-                        id="pop_open_positions_",
-                        n_clicks=0,
-                        style={"cursor": "pointer"}
-                    ),
-                    open_positions_graph := dcc.Graph("open_positions_graph_", config={'displaylogo': False}),
-                ],
-                style={
-                    "width": "100%",
-                    "padding": "10px"
-                }
-            ),
-            html.Div(
-                [
-                    pop_all_positions := html.Div(
-                        [
-                            html.Span("⇱\u2007", style={"display": "inline-block", "fontSize": "16px"}),
-                            html.H6("Positions of Alltime", style={"display": "inline-block"}),
-                        ],
-                        id="pop_all_positions_",
-                        n_clicks=0,
-                        style={"cursor": "pointer"}
-                    ),
-                    all_positions_graph := dcc.Graph("all_positions_graph_", config={'displaylogo': False}),
-                ],
-                style={
-                    "width": "100%",
-                    "padding": "10px"
-                }
-            ),
-            html.Div(
-                [
-                    pop_performance := html.Div(
-                        [
-                            html.Span("⇱\u2007", style={"display": "inline-block", "fontSize": "16px"}),
-                            html.H6("Performance", style={"display": "inline-block"}),
-                        ],
-                        id="pop_performance_",
-                        n_clicks=0,
-                        style={"cursor": "pointer"}
-                    ),
-                    html.Div([
-                        drag_container := html.Div(
-                            _dragcontainer,
-                            id="dragContainer",
-                            style={
-                                "display": "inline-block",
-                                "width": "2%",
-                                "height": "%dpx" % styles.figures.size_slider_kwargs_performance["value"]
-                            }
+                                html.Div(
+                                    performance_graph := dcc.Graph("performance_graph_", config={"displaylogo": False}),
+                                    style={"display": "inline-block", "width": "98%"},
+                                ),
+                            ],
+                            style={"display": "flex"},
                         ),
-                        html.Div(
-                            performance_graph := dcc.Graph("performance_graph_", config={'displaylogo': False}),
-                            style={
-                                "display": "inline-block",
-                                "width": "98%"
-                            }
-                        )
                     ],
-                        style={"display": "flex"}
-                    )
-                ],
-                style={
-                    "width": "100%"
-                }
-            ),
-        ]
-    ),
-],
+                    style={"width": "100%"},
+                ),
+            ]
+        ),
+    ],
     id="statistics_",
     style={
         "height": "100%",
         "overflowY": "scroll",
         "overflowX": "hidden",
-        "display": ("" if __env__.sideInitStatisticValue else "none")
-    }
+        "display": ("" if __env__.sideInitStatisticValue else "none"),
+    },
 )

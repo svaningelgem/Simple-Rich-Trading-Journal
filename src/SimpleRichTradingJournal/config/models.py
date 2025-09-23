@@ -1,12 +1,13 @@
 """Pydantic models for SRTJ configuration."""
 
-from pathlib import Path
-from typing import List, Literal, Optional, Dict, Any
+from typing import Any, Literal
+
 from pydantic import BaseModel, Field, field_validator
 
 
 class AppConfig(BaseModel):
     """Application-level configuration."""
+
     host: str = "127.0.0.1"
     port: int = Field(default=8050, ge=1024, le=65535)
     profile: str = ""
@@ -14,6 +15,7 @@ class AppConfig(BaseModel):
 
 class StartupConfig(BaseModel):
     """Startup behavior configuration."""
+
     flush_open_take_amount: bool = True
     disable_copy_paste: bool = False
     disable_footer_life_signal: bool = True
@@ -21,6 +23,7 @@ class StartupConfig(BaseModel):
 
 class GridConfig(BaseModel):
     """Grid layout configuration."""
+
     side_init_balance: bool = False
     side_size_init_scale: float = Field(default=0.2, ge=0.0, le=1.0)
     def_width_scale: float = Field(default=0.2, ge=0.0, le=1.0)
@@ -34,6 +37,8 @@ class GridConfig(BaseModel):
         if self.side_size_init_scale:
             return self.side_init_balance
         return 0
+
+
 # # Set up grid sizing
 # if config.ui.grid.side_size_init_scale:
 #     gridSideSizeInitValue = int(config.ui.grid.side_size_init_scale * 100)
@@ -47,30 +52,30 @@ class GridConfig(BaseModel):
 #     sideInitStatisticValue = 0
 
 
-
 class UIConfig(BaseModel):
     """User interface configuration."""
+
     date_format: Literal["ISO 8601", "american", "international", "ydm", "mdy", "dmy"] = "international"
     date_format_first_day_of_week: int = Field(default=1, ge=0, le=6)
     color_theme: Literal["dark", "light", "blank"] = "dark"
     use_default_alt_colors: bool = False
     checkbox_long_short_styling: Literal["", "0", "s", "ls"] = "s"
     grid: GridConfig = Field(default_factory=GridConfig)
-    bind_key_codes: List[str] = Field(default_factory=lambda: [
-        "KeyC", "KeyX", "KeyV", "KeyA", "KeyY", "KeyZ",
-        "Space", "KeyI", "Backslash", "KeyM"
-    ])
+    bind_key_codes: list[str] = Field(
+        default_factory=lambda: ["KeyC", "KeyX", "KeyV", "KeyA", "KeyY", "KeyZ", "Space", "KeyI", "Backslash", "KeyM"]
+    )
 
-    @field_validator('bind_key_codes')
+    @field_validator("bind_key_codes")
     @classmethod
     def validate_key_codes(cls, v):
         if len(v) != 10:
-            raise ValueError('bind_key_codes must have exactly 10 elements')
+            raise ValueError("bind_key_codes must have exactly 10 elements")
         return v
 
 
 class ScopeConfig(BaseModel):
     """Data scoping configuration."""
+
     index_by_take_time: bool = False
     scope_by_index: bool = True
     strict_scope_by_both: bool = True
@@ -79,6 +84,7 @@ class ScopeConfig(BaseModel):
 
 class CellRendererChangeConfig(BaseModel):
     """Cell renderer change animation configuration."""
+
     take_amount: bool = False
     take_course: bool = False
     performance: bool = True
@@ -87,26 +93,53 @@ class CellRendererChangeConfig(BaseModel):
 
 class LogConfig(BaseModel):
     """Journal log configuration."""
-    col_order_asset_id: List[int] = Field(default_factory=lambda: [-1, 1, 2, 3, 4, 5, 6, 7, 8])
-    col_order_note: List[int] = Field(default_factory=lambda: [0, 0, 0, 0, 0, 0, 0, 8])
-    col_order: List[int] = Field(default_factory=lambda: [1, 2, 3, 4, 5, 6, 7, 8])
-    col_widths: List[int] = Field(default_factory=lambda: [
-        140, 0, 0, 0, 0, 0, 0, 0, 80, 170, 150, 110,
-        170, 150, 110, 80, 110, 110, 80, 120, 170, 160, 160, 160, 160
-    ])
+
+    col_order_asset_id: list[int] = Field(default_factory=lambda: [-1, 1, 2, 3, 4, 5, 6, 7, 8])
+    col_order_note: list[int] = Field(default_factory=lambda: [0, 0, 0, 0, 0, 0, 0, 8])
+    col_order: list[int] = Field(default_factory=lambda: [1, 2, 3, 4, 5, 6, 7, 8])
+    col_widths: list[int] = Field(
+        default_factory=lambda: [
+            140,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            80,
+            170,
+            150,
+            110,
+            170,
+            150,
+            110,
+            80,
+            110,
+            110,
+            80,
+            120,
+            170,
+            160,
+            160,
+            160,
+            160,
+        ]
+    )
     column_state_cache: Literal["", "0", "global", "own"] = "global"
     cell_renderer_change: CellRendererChangeConfig = Field(default_factory=CellRendererChangeConfig)
 
-    @field_validator('col_widths')
+    @field_validator("col_widths")
     @classmethod
     def validate_col_widths(cls, v):
         if len(v) != 25:
-            raise ValueError('col_widths must have exactly 25 elements')
+            raise ValueError("col_widths must have exactly 25 elements")
         return v
 
 
 class BalanceConfig(BaseModel):
     """Balance section configuration."""
+
     t52w: bool = True
     current: bool = True
     years: bool = True
@@ -115,25 +148,27 @@ class BalanceConfig(BaseModel):
 
 class PerformanceConfig(BaseModel):
     """Performance analysis configuration."""
+
     steps_default: Literal["w", "m", "q"] = "w"
     interval_default: Literal["w", "m", "q"] = "w"
     frame_default: Literal["w", "m", "q"] = "q"
     range_default: Literal[0, 12, 24, 48] = 0
     hypothesis_per_day: bool = False
-    order: List[int] = Field(default_factory=lambda: [1, 2, 3, 4, 5, 6, 7, 8])
+    order: list[int] = Field(default_factory=lambda: [1, 2, 3, 4, 5, 6, 7, 8])
 
-    @field_validator('order')
+    @field_validator("order")
     @classmethod
     def validate_order(cls, v):
         if len(v) != 8:
-            raise ValueError('order must have exactly 8 elements')
+            raise ValueError("order must have exactly 8 elements")
         if set(v) != set(range(1, 9)):
-            raise ValueError('order must contain unique values 1-8')
+            raise ValueError("order must contain unique values 1-8")
         return v
 
 
 class GraphSizesConfig(BaseModel):
     """Graph size configuration."""
+
     performance: int = Field(default=1000, ge=500, le=6000)
     pop: int = Field(default=2000, ge=500, le=6000)
     open_positions: int = Field(default=500, ge=200, le=2000)
@@ -142,7 +177,8 @@ class GraphSizesConfig(BaseModel):
 
 class StatisticsConfig(BaseModel):
     """Statistics configuration."""
-    group_default: List[int] = Field(default_factory=lambda: [0, 0, 0, 0, 1])
+
+    group_default: list[int] = Field(default_factory=lambda: [0, 0, 0, 0, 1])
     sun_max_depth: int = Field(default=4, ge=1)
     use_sun_max_depth: bool = True
     id_by_symbol: bool = False
@@ -150,16 +186,17 @@ class StatisticsConfig(BaseModel):
     performance: PerformanceConfig = Field(default_factory=PerformanceConfig)
     graph_sizes: GraphSizesConfig = Field(default_factory=GraphSizesConfig)
 
-    @field_validator('group_default')
+    @field_validator("group_default")
     @classmethod
     def validate_group_default(cls, v):
         if len(v) != 5:
-            raise ValueError('group_default must have exactly 5 elements')
+            raise ValueError("group_default must have exactly 5 elements")
         return v
 
 
 class NotesConfig(BaseModel):
     """Notes interface configuration."""
+
     paper_default_transparency: bool = True
     editor_default_transparency: bool = True
     file_drop_cloner: Literal["", "0", "global", "own"] = "global"
@@ -175,6 +212,7 @@ class NotesConfig(BaseModel):
 
 class PluginsConfig(BaseModel):
     """Plugin configuration."""
+
     course_update_interval: bool = False
     course_update_interval_on: bool = False
     course_update_interval_ms: int = Field(default=10000, ge=1000)
@@ -183,6 +221,7 @@ class PluginsConfig(BaseModel):
 
 class StorageConfig(BaseModel):
     """Storage backend configuration."""
+
     backend: Literal["pickle", "sqlite", "mysql", "postgresql"] = "pickle"
     connection_string: str = ""
     table_prefix: str = "srtj_"
@@ -191,12 +230,14 @@ class StorageConfig(BaseModel):
 
 class MaintenanceConfig(BaseModel):
     """Maintenance and cleanup configuration."""
+
     autoclean_interval_s: int = Field(default=2592000, ge=3600)  # At least 1 hour
     n_history_slots: int = Field(default=10, ge=1, le=50)
 
 
 class ThemeColorsConfig(BaseModel):
     """Theme color configuration."""
+
     table_bg_main: str
     table_bg_2: str
     table_bg_header: str
@@ -207,42 +248,44 @@ class ThemeColorsConfig(BaseModel):
 
 class ThemeConfig(BaseModel):
     """Theme configuration - loaded from theme files."""
+
     table_theme: str
     main: ThemeColorsConfig
     row_mark: str
-    alt: Dict[str, str]
-    columns: Dict[str, str]
-    records: Dict[str, str]
-    cell_values: Dict[str, str]
-    marks: Dict[str, str]
-    rating_scale: List[str]
-    alt_rating_scale: List[str]
-    figures: Dict[str, Any]
-    color_palette_positions: List[str]
-    footer: Dict[str, str]
-    topbar: Dict[str, str]
-    balance: Dict[str, str]
-    notepaper: Dict[str, str]
-    notebook: Dict[str, str]
-    noteeditor_dialog: Dict[str, str]
+    alt: dict[str, str]
+    columns: dict[str, str]
+    records: dict[str, str]
+    cell_values: dict[str, str]
+    marks: dict[str, str]
+    rating_scale: list[str]
+    alt_rating_scale: list[str]
+    figures: dict[str, Any]
+    color_palette_positions: list[str]
+    footer: dict[str, str]
+    topbar: dict[str, str]
+    balance: dict[str, str]
+    notepaper: dict[str, str]
+    notebook: dict[str, str]
+    noteeditor_dialog: dict[str, str]
 
-    @field_validator('rating_scale', 'alt_rating_scale')
+    @field_validator("rating_scale", "alt_rating_scale")
     @classmethod
     def validate_rating_scales(cls, v):
         if len(v) != 9:
-            raise ValueError('Rating scales must have exactly 9 colors')
+            raise ValueError("Rating scales must have exactly 9 colors")
         return v
 
-    @field_validator('color_palette_positions')
+    @field_validator("color_palette_positions")
     @classmethod
     def validate_color_palette(cls, v):
         if len(v) < 10:
-            raise ValueError('Color palette must have at least 10 colors')
+            raise ValueError("Color palette must have at least 10 colors")
         return v
 
 
 class Config(BaseModel):
     """Complete SRTJ configuration."""
+
     app: AppConfig = Field(default_factory=AppConfig)
     startup: StartupConfig = Field(default_factory=StartupConfig)
     ui: UIConfig = Field(default_factory=UIConfig)

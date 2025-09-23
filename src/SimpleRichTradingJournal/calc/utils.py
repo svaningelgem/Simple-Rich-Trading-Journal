@@ -28,10 +28,9 @@ def tradetimeparser(spec: str):
         elif m := search("^(\\d{1,2})[ .,:/-]?(\\d\\d)[ .,:/-]?(\\d\\d)[ .,:/-]?(\\d\\d)[ .,:/-]?(\\d\\d)$", spec):
             date = datetime(int(m.group(3)), int(m.group(2)), int(m.group(1)), int(m.group(4)), int(m.group(5)))
         else:
-            raise ValueError("FormatError: %r" % spec)
+            raise ValueError(f"FormatError: {spec!r}")
         return date.strftime(__env__.timeFormatTransaction)
-    else:
-        return ""
+    return ""
 
 
 def datetime_from_tradetimeformat(spec: str, default=None):
@@ -48,29 +47,31 @@ def do_add_row(table_data: list[dict]) -> bool:
         return True
     if ((N := row0.get("n")) or 0) < 0:
         return True
-    elif N is not None:
-        if row0.get("InvestTime") and (row0.get("InvestAmount") or row0.get("InvestCourse") or row0.get("ITC")):
+    if N is not None:
+        if (row0.get("InvestTime") and (row0.get("InvestAmount") or row0.get("InvestCourse") or row0.get("ITC"))) or (
+            row0.get("TakeTime")
+            and (row0.get("TakeAmount") is not None or row0.get("TakeCourse") is not None or row0.get("ITC"))
+        ):
             return True
-        elif row0.get("TakeTime") and (row0.get("TakeAmount") is not None or row0.get("TakeCourse") is not None or row0.get("ITC")):
-            return True
+    return None
 
 
 def durationformat(duration: float) -> str:
     duration = int(duration)
     y = str((duration // 31557600) or "")
-    duration = (duration % 31557600)
+    duration = duration % 31557600
     m = str((duration // 2629800) or "")
     if m or y:
         m = ("00" + m)[-2:]
-    duration = (duration % 2629800)
+    duration = duration % 2629800
     d = str((duration // 86400) or "")
     if d or m:
         d = ("00" + d)[-2:]
-    duration = (duration % 86400)
+    duration = duration % 86400
     H = str((duration // 3600) or "")
     if H or d:
         H = ("00" + H)[-2:]
-    duration = (duration % 3600)
+    duration = duration % 3600
     M = str((duration // 60) or "")
     return y + " | " + m + " | " + d + " | " + H + " , " + M
 

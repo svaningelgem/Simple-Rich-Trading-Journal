@@ -1,8 +1,7 @@
 from time import perf_counter
 
-from dash import State, Output, Input, callback, no_update
-
 import layout
+from dash import Input, Output, State, callback, no_update
 
 _pre_scopes = set()
 _pre_scopes_t = 0
@@ -16,7 +15,7 @@ _doubleClickTime = 0.3
     Output(layout.tradinglog, "dashGridOptions", allow_duplicate=True),
     Output(layout.header.scopes_check, "value", allow_duplicate=True),
     Input(layout.header.scopes_check, "value"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
 def scopes_check(scopes):
     global _pre_scopes, _pre_scopes_t, _pre_scopes_d, _pre_scopes_l
@@ -47,13 +46,15 @@ def scopes_check(scopes):
         elif len_scopes in (0, 7):
             opts = layout.log._dashGridOptions | {
                 "isExternalFilterPresent": {"function": "false"},
-                "doesExternalFilterPass": {"function": "true"}
+                "doesExternalFilterPass": {"function": "true"},
             }
             return opts, no_update
 
         opts = layout.log._dashGridOptions | {
             "isExternalFilterPresent": {"function": "true"},
-            "doesExternalFilterPass": {"function": str(" || ").join(func for k, func in layout.header.scopes_x_func.items() if k in scopes)}
+            "doesExternalFilterPass": {
+                "function": " || ".join(func for k, func in layout.header.scopes_x_func.items() if k in scopes)
+            },
         }
         return opts, list(scopes)
 
@@ -67,10 +68,9 @@ def scopes_check(scopes):
     Input(layout.header.search_input, "value"),
     State(layout.tradinglog, "dashGridOptions"),
     State(layout.quick_search_receiver, "value"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
 def quick_search(val, opt, ctrl_qick_search):
     if ctrl_qick_search:
         return opt | {"quickFilterText": None}
-    else:
-        return opt | {"quickFilterText": val}
+    return opt | {"quickFilterText": val}

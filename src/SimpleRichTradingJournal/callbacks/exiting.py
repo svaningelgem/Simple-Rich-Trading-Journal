@@ -3,12 +3,9 @@ from __future__ import annotations
 from os import kill
 from signal import SIGTERM
 
-from dash import callback, Output, Input, State
-from dash import html
-
 import __env__
-import __ini__.logtags
 import layout
+from dash import Input, Output, State, callback, html
 
 from src.SimpleRichTradingJournal.config import config
 
@@ -18,7 +15,7 @@ from src.SimpleRichTradingJournal.config import config
     Output(layout.exiting_modal_trigger, "n_clicks"),
     Input(layout.exiting.exit_button, "n_clicks"),
     State(layout.exiting_modal_trigger, "n_clicks"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
 def exiting_req(_, n):
     msg = html.Div(
@@ -37,17 +34,16 @@ def exiting_req(_, n):
 @callback(
     Output(layout.exiting.exit_modal_button, "children"),
     Input(layout.exiting.exit_modal_button, "n_clicks"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
-def confirm(_):
+def confirm(_) -> str:
     return "Terminated"
 
 
 @callback(
     Output(layout.exiting.exit_button, "id"),
     Input(layout.exiting.exit_modal_button, "children"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
-def exiting(_):
-    print(__ini__.logtags.term, __env__.SERVER_PROC.pid, flush=True)
+def exiting(_) -> None:
     kill(__env__.SERVER_PROC.pid, SIGTERM)

@@ -1,48 +1,48 @@
 import __env__
+
 from .. import config
 
-
 dataTypeDefinitions = {
-    'percentage': {
-        'extendsDataType': 'number',
-        'baseDataType': 'number',
+    "percentage": {
+        "extendsDataType": "number",
+        "baseDataType": "number",
         "valueFormatter": {"function": "params.value == null ? '' :  d3.format('+,.2%')(params.value)"},
         "columnTypes": "rightAligned",
-        "appendColumnTypes": True
+        "appendColumnTypes": True,
     },
-    'percentage3': {
-        'extendsDataType': 'number',
-        'baseDataType': 'number',
+    "percentage3": {
+        "extendsDataType": "number",
+        "baseDataType": "number",
         "valueFormatter": {"function": "params.value == null ? '' :  d3.format('+,.3%')(params.value)"},
         "columnTypes": "rightAligned",
-        "appendColumnTypes": True
+        "appendColumnTypes": True,
     },
-    'prefixed': {
-        'extendsDataType': 'number',
-        'baseDataType': 'number',
+    "prefixed": {
+        "extendsDataType": "number",
+        "baseDataType": "number",
         "valueFormatter": {"function": "params.value == null ? '' :  d3.format('+,.2f')(params.value)"},
         "columnTypes": "rightAligned",
-        "appendColumnTypes": True
+        "appendColumnTypes": True,
     },
-    'prefixed3': {
-        'extendsDataType': 'number',
-        'baseDataType': 'number',
+    "prefixed3": {
+        "extendsDataType": "number",
+        "baseDataType": "number",
         "valueFormatter": {"function": "params.value == null ? '' :  d3.format('+,.3f')(params.value)"},
         "columnTypes": "rightAligned",
-        "appendColumnTypes": True
+        "appendColumnTypes": True,
     },
-    'grouped': {
-        'extendsDataType': 'number',
-        'baseDataType': 'number',
+    "grouped": {
+        "extendsDataType": "number",
+        "baseDataType": "number",
         "valueFormatter": {"function": "params.value == null ? '' :  d3.format(',.2f')(params.value)"},
         "columnTypes": "rightAligned",
-        "appendColumnTypes": True
+        "appendColumnTypes": True,
     },
-    'timedelta': {
-        'extendsDataType': 'number',
-        'baseDataType': 'number',
+    "timedelta": {
+        "extendsDataType": "number",
+        "baseDataType": "number",
         "columnTypes": "rightAligned",
-        "appendColumnTypes": True
+        "appendColumnTypes": True,
     },
 }
 
@@ -54,7 +54,7 @@ _calcCell = {
 
 
 Name = {
-    'cellStyle': {
+    "cellStyle": {
         "styleConditions": [
             {
                 "condition": "params.data.cat == ''",
@@ -124,54 +124,28 @@ Name = {
         "defaultStyle": name_undefined,
     },
     "width": config.log().col_widths[0],
-    "hide": not config.log().col_widths[0]
+    "hide": not config.log().col_widths[0],
 }
 
 Name["cellStyle"]["styleConditions"] = [
-    {
-        "condition": "params.data.mark == 1 && " + sc["condition"],
-        "style": sc["style"] | name_row_mark
-    } for sc in Name["cellStyle"]["styleConditions"]
+    {"condition": "params.data.mark == 1 && " + sc["condition"], "style": sc["style"] | name_row_mark}
+    for sc in Name["cellStyle"]["styleConditions"]
 ] + Name["cellStyle"]["styleConditions"]
 
-Symbol = {
-    'cellStyle': {} | symbol,
-    "width": config.log.col_widths[1],
-    "hide": not config.log.col_widths[1]
-}
+Symbol = {"cellStyle": {} | symbol, "width": config.log.col_widths[1], "hide": not config.log.col_widths[1]}
 
-ISIN = {
-    'cellStyle': {} | isin,
-    "width": config.log.col_widths[2],
-    "hide": not config.log.col_widths[2]
-}
+ISIN = {"cellStyle": {} | isin, "width": config.log.col_widths[2], "hide": not config.log.col_widths[2]}
 
-Type = {
-    'cellStyle': {} | type,
-    "width": config.log.col_widths[3],
-    "hide": not config.log.col_widths[3]
-}
+Type = {"cellStyle": {} | type, "width": config.log.col_widths[3], "hide": not config.log.col_widths[3]}
 
-Short = {
-    'cellStyle': {} | short,
-    "width": config.log.col_widths[4],
-    "hide": not config.log.col_widths[4]
-}
+Short = {"cellStyle": {} | short, "width": config.log.col_widths[4], "hide": not config.log.col_widths[4]}
 
-Sector = {
-    'cellStyle': {} | sector,
-    "width": config.log.col_widths[5],
-    "hide": not config.log.col_widths[5]
-}
+Sector = {"cellStyle": {} | sector, "width": config.log.col_widths[5], "hide": not config.log.col_widths[5]}
 
-Category = {
-    'cellStyle': {} | sector,
-    "width": config.log.col_widths[6],
-    "hide": not config.log.col_widths[6]
-}
+Category = {"cellStyle": {} | sector, "width": config.log.col_widths[6], "hide": not config.log.col_widths[6]}
 
 Rating = {
-    'cellStyle': {
+    "cellStyle": {
         "styleConditions": [
             {
                 "condition": "params.value > 8",
@@ -213,11 +187,11 @@ Rating = {
         "defaultStyle": rating,
     },
     "width": config.log.col_widths[7],
-    "hide": not config.log.col_widths[7]
+    "hide": not config.log.col_widths[7],
 }
 
 N = {
-    'cellStyle': {
+    "cellStyle": {
         "styleConditions": [
             {
                 "condition": "params.value == 0",
@@ -231,11 +205,11 @@ N = {
         "defaultStyle": n_default,
     },
     "width": config.log.col_widths[8],
-    "hide": not config.log.col_widths[8]
+    "hide": not config.log.col_widths[8],
 }
 
 InvestTime = {
-    'cellStyle': {
+    "cellStyle": {
         "styleConditions": [
             {
                 "condition": "params.data.cat == 'd' && params.data.InvestAmount == params.data.TakeAmount + params.data.ITC",
@@ -265,30 +239,35 @@ InvestTime = {
         "defaultStyle": invest_col,
     },
     "width": config.log.col_widths[9],
-    "hide": not config.log.col_widths[9]
+    "hide": not config.log.col_widths[9],
 }
 
 InvestAmount = {
-    'cellStyle': {
+    "cellStyle": {
         "styleConditions": [
             {
                 "condition": "params.data.cat == 'd'",
                 "style": invest_amount_deposit,
             },
-        ] + InvestTime["cellStyle"]["styleConditions"],
+        ]
+        + InvestTime["cellStyle"]["styleConditions"],
         "defaultStyle": invest_col,
     },
     "width": config.log.col_widths[10],
-    "hide": not config.log.col_widths[10]
+    "hide": not config.log.col_widths[10],
 } | _calcCell
 
-InvestCourse = InvestTime | {
-    "width": config.log.col_widths[11],
-    "hide": not config.log.col_widths[11],
-} | _calcCell
+InvestCourse = (
+    InvestTime
+    | {
+        "width": config.log.col_widths[11],
+        "hide": not config.log.col_widths[11],
+    }
+    | _calcCell
+)
 
 TakeTime = {
-    'cellStyle': {
+    "cellStyle": {
         "styleConditions": [
             {
                 "condition": "params.data.cat == 'd' && params.data.InvestAmount == params.data.TakeAmount + params.data.ITC",
@@ -318,35 +297,45 @@ TakeTime = {
         "defaultStyle": take_col,
     },
     "width": config.log.col_widths[12],
-    "hide": not config.log.col_widths[12]
+    "hide": not config.log.col_widths[12],
 }
 
-TakeAmount = {
-    'cellStyle': {
-        "styleConditions": [
-            {
-                "condition": "params.data.cat == 'p'",
-                "style": take_amount_payout,
-            },
-            {
-                "condition": "params.data.cat == 'v'",
-                "style": take_amount_dividend,
-            },
-        ] + TakeTime["cellStyle"]["styleConditions"],
-        "defaultStyle": take_col,
-    },
-    "width": config.log.col_widths[13],
-    "hide": not config.log.col_widths[13]
-} | __env__.cellRendererChangeTakeAmount | _calcCell
+TakeAmount = (
+    {
+        "cellStyle": {
+            "styleConditions": [
+                {
+                    "condition": "params.data.cat == 'p'",
+                    "style": take_amount_payout,
+                },
+                {
+                    "condition": "params.data.cat == 'v'",
+                    "style": take_amount_dividend,
+                },
+            ]
+            + TakeTime["cellStyle"]["styleConditions"],
+            "defaultStyle": take_col,
+        },
+        "width": config.log.col_widths[13],
+        "hide": not config.log.col_widths[13],
+    }
+    | __env__.cellRendererChangeTakeAmount
+    | _calcCell
+)
 
-TakeCourse = TakeTime | {
-    "width": config.log.col_widths[14],
-    "hide": not config.log.col_widths[14],
-} | __env__.cellRendererChangeTakeCourse | _calcCell
+TakeCourse = (
+    TakeTime
+    | {
+        "width": config.log.col_widths[14],
+        "hide": not config.log.col_widths[14],
+    }
+    | __env__.cellRendererChangeTakeCourse
+    | _calcCell
+)
 
 
 Itc = {
-    'cellStyle': {
+    "cellStyle": {
         "styleConditions": [
             {
                 "condition": "params.data.cat == ''",
@@ -372,11 +361,11 @@ Itc = {
         "defaultStyle": itc_col,
     },
     "width": config.log.col_widths[15],
-    "hide": not config.log.col_widths[15]
+    "hide": not config.log.col_widths[15],
 } | _calcCell
 
 Performance = {
-    'cellStyle': {
+    "cellStyle": {
         "styleConditions": [
             {
                 "condition": "params.data.cat == 'i'",
@@ -406,11 +395,11 @@ Performance = {
         "defaultStyle": performance_neg,
     },
     "width": config.log.col_widths[16],
-    "hide": not config.log.col_widths[16]
+    "hide": not config.log.col_widths[16],
 } | __env__.cellRendererChangePerformance
 
 Profit = {
-    'cellStyle': {
+    "cellStyle": {
         "styleConditions": [
             {
                 "condition": "params.data.cat == 'd' && params.value > 0",
@@ -428,11 +417,11 @@ Profit = {
         "defaultStyle": profit_neg,
     },
     "width": config.log.col_widths[17],
-    "hide": not config.log.col_widths[17]
+    "hide": not config.log.col_widths[17],
 } | __env__.cellRendererChangeProfit
 
 Dividend = {
-    'cellStyle': {
+    "cellStyle": {
         "styleConditions": [
             {
                 "condition": "params.data.cat == 'd'",
@@ -442,23 +431,19 @@ Dividend = {
         "defaultStyle": result,
     },
     "width": config.log.col_widths[18],
-    "hide": not config.log.col_widths[18]
+    "hide": not config.log.col_widths[18],
 }
 
 Note = {
-    'cellStyle': {"white-space": "pre"} | note,
+    "cellStyle": {"white-space": "pre"} | note,
     "width": config.log.col_widths[19],
-    "hide": not config.log.col_widths[19]
+    "hide": not config.log.col_widths[19],
 }
 
-HoldTime = {
-    'cellStyle': holdtime,
-    "width": config.log.col_widths[20],
-    "hide": not config.log.col_widths[20]
-}
+HoldTime = {"cellStyle": holdtime, "width": config.log.col_widths[20], "hide": not config.log.col_widths[20]}
 
 ProfitDay = {
-    'cellStyle': {
+    "cellStyle": {
         "styleConditions": [
             {
                 "condition": "params.value > 0",
@@ -468,7 +453,7 @@ ProfitDay = {
         "defaultStyle": statistic_neg,
     },
     "width": config.log.col_widths[21],
-    "hide": not config.log.col_widths[21]
+    "hide": not config.log.col_widths[21],
 }
 
 PerformanceDay = ProfitDay | {
@@ -477,7 +462,7 @@ PerformanceDay = ProfitDay | {
 }
 
 ProfitYear = {
-    'cellStyle': {
+    "cellStyle": {
         "styleConditions": [
             {
                 "condition": "params.value > 0",
@@ -487,7 +472,7 @@ ProfitYear = {
         "defaultStyle": statistic_neg,
     },
     "width": config.log.col_widths[23],
-    "hide": not config.log.col_widths[23]
+    "hide": not config.log.col_widths[23],
 }
 
 PerformanceYear = ProfitDay | {

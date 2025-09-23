@@ -1,6 +1,10 @@
-import __env__
-
-cell_default = {"fontSize": "13px", "fontFamily": "monospace", "color": "black", "paddingRight": "10px", "paddingLeft": "10px"}
+cell_default = {
+    "fontSize": "13px",
+    "fontFamily": "monospace",
+    "color": "black",
+    "paddingRight": "10px",
+    "paddingLeft": "10px",
+}
 col1_cell_default = cell_default | {"textAlign": "left", "borderRight": "1px solid " + config.themes.sheet_col1_sep}
 header_default = {"fontWeight": "bold", "borderBottom": "2px solid black"}
 col1_header_default = header_default
@@ -29,7 +33,11 @@ active = {"border": "unset !important", "backgroundColor": config.themes.sheet_c
 selected = {"border": "unset !important", "backgroundColor": config.themes.sheet_cell_selected_bg}
 
 t52w_button_on = {"backgroundColor": config.themes.sheet_header_t52, "border": "3px double #000", "color": "black"}
-current_button_on = {"backgroundColor": config.themes.sheet_header_current, "border": "3px double #000", "color": "black"}
+current_button_on = {
+    "backgroundColor": config.themes.sheet_header_current,
+    "border": "3px double #000",
+    "color": "black",
+}
 year_button_on = {"backgroundColor": config.themes.sheet_header_year, "border": "3px double #000", "color": "black"}
 quarter_button_on = {"backgroundColor": "#FFF", "border": "3px double #000", "color": "black"}
 

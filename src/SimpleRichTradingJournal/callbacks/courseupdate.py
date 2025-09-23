@@ -1,14 +1,10 @@
-from sys import stderr
 from traceback import print_exception
 
-from dash import callback, Output, Input, State, no_update
-
 import __env__
-import __ini__.logtags
 import layout
-from config import styles
 from callbacks import main
-
+from config import styles
+from dash import Input, Output, State, callback, no_update
 
 s_update_interval_button_on = layout.header.update_interval_button.style | styles.misc.interval_on
 s_update_interval_button_off = layout.header.update_interval_button.style | styles.misc.interval_off
@@ -21,12 +17,12 @@ s_update_interval_button_off = layout.header.update_interval_button.style | styl
     Input(layout.header.update_interval_trigger, "n_clicks"),
     Input(layout.header.update_interval_button, "n_clicks"),
     Input(layout.header.update_interval, "n_intervals"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
 def toggle(
-        i_update_interval_trigger_n_clicks,
-        i_update_interval_button_n_clicks,
-        i_update_interval_n_intervals,
+    i_update_interval_trigger_n_clicks,
+    i_update_interval_button_n_clicks,
+    i_update_interval_n_intervals,
 ):
     if i_update_interval_button_n_clicks % 2:
         o_update_interval_trigger_n_clicks = i_update_interval_trigger_n_clicks + 1
@@ -78,36 +74,38 @@ else:
     State(layout.summary_footer, "style"),
     [State(i, "value") for i in layout.statistics._group_by_checks],
     State(layout.statistics.show_all, "value"),
-    config_prevent_initial_callbacks=True
+    config_prevent_initial_callbacks=True,
 )
 def course_update(
-        _,
-        i_with_open_value,
-        i_performance_size_slider_value,
-        i_performance_steps_value,
-        i_performance_trailing_frame_value,
-        i_performance_trailing_interval_value,
-        i_performance_range_value,
-        i_performance_hypothesis_per_value,
-        i_drag_container_style,
-        i_drag_event_receiver_value,
-        i_STATISTICS_style,
-        i_BALANCE_style,
-        i_T_trigger_,
-        i_C_trigger_,
-        i_Y_trigger_,
-        i_Q_trigger_,
-        i_scope_by_button_n_clicks,
-        i_drag_event_receiver2_value,
-        i_summary_footer_style,
-        i_group_by_short,
-        i_group_by_type,
-        i_group_by_sector,
-        i_group_by_category,
-        i_group_by_id,
-        i_group_by_show_all,
+    _,
+    i_with_open_value,
+    i_performance_size_slider_value,
+    i_performance_steps_value,
+    i_performance_trailing_frame_value,
+    i_performance_trailing_interval_value,
+    i_performance_range_value,
+    i_performance_hypothesis_per_value,
+    i_drag_container_style,
+    i_drag_event_receiver_value,
+    i_STATISTICS_style,
+    i_BALANCE_style,
+    i_T_trigger_,
+    i_C_trigger_,
+    i_Y_trigger_,
+    i_Q_trigger_,
+    i_scope_by_button_n_clicks,
+    i_drag_event_receiver2_value,
+    i_summary_footer_style,
+    i_group_by_short,
+    i_group_by_type,
+    i_group_by_sector,
+    i_group_by_category,
+    i_group_by_id,
+    i_group_by_show_all,
 ):
-    o_summary_footer_style = o_tradinglog_rowTransaction = o_summary_footer_children = o_open_positions_graph_figure = o_all_positions_graph_figure = o_performance_graph_figure = o_drag_container_style = o_BALANCE_children = o_fin = no_update
+    o_summary_footer_style = o_tradinglog_rowTransaction = o_summary_footer_children = o_open_positions_graph_figure = (
+        o_all_positions_graph_figure
+    ) = o_performance_graph_figure = o_drag_container_style = o_BALANCE_children = o_fin = no_update
     try:
         o_tradinglog_rowTransaction = {"update": main.__lc__.update_course()}
         if main.__lc__._calc_with_open_positions:
@@ -123,11 +121,13 @@ def course_update(
             i_BALANCE_style = not i_BALANCE_style.get("display")
 
             o_summary_footer_children = layout.make.make_footer(main.__lc__)
-            (o_open_positions_graph_figure,
-             o_all_positions_graph_figure,
-             o_performance_graph_figure,
-             o_BALANCE_children,
-             o_drag_container_style) = main.new_side(
+            (
+                o_open_positions_graph_figure,
+                o_all_positions_graph_figure,
+                o_performance_graph_figure,
+                o_BALANCE_children,
+                o_drag_container_style,
+            ) = main.new_side(
                 i_drag_event_receiver2_value,
                 i_group_by_type,
                 i_group_by_short,
@@ -148,15 +148,16 @@ def course_update(
                 i_T_trigger_,
                 i_C_trigger_,
                 i_STATISTICS_style,
-                i_BALANCE_style
+                i_BALANCE_style,
             )
     except Exception as e:
         print_exception(e)
-        print(__ini__.logtags.error, e, flush=True, file=stderr)
         o_summary_footer_style = i_summary_footer_style | styles.misc.summary_error
         o_tradinglog_rowTransaction = no_update
     else:
-        o_summary_footer_style = i_summary_footer_style | styles.misc.summary_error_reset | __env__.get_footer_live_signal()
+        o_summary_footer_style = (
+            i_summary_footer_style | styles.misc.summary_error_reset | __env__.get_footer_live_signal()
+        )
         o_fin = False
     return (
         o_tradinglog_rowTransaction,
