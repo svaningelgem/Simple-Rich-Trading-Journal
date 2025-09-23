@@ -11,6 +11,7 @@ class AppConfig(BaseModel):
     host: str = "127.0.0.1"
     port: int = Field(default=8050, ge=1024, le=65535)
     profile: str = ""
+
     @property
     def url(self) -> str:
         """Server URL"""
@@ -20,6 +21,7 @@ class AppConfig(BaseModel):
     def pong_url(self) -> str:
         """Pong endpoint URL"""
         return f"{self.url}/files/.pong"
+
 
 class StartupConfig(BaseModel):
     """Startup behavior configuration."""
@@ -45,7 +47,33 @@ class GridConfig(BaseModel):
         if self.side_size_init_scale:
             return self.side_init_balance
         return 0
+    @property
+    def side_size_init_value(self) -> int:
+        """Grid side size initial value as percentage"""
+        if self.side_size_init_scale:
+            return int(self.side_size_init_scale * 100)
+        return 0
 
+    @property
+    def c1_width(self) -> str:
+        """Column 1 width as percentage string"""
+        if self.side_size_init_scale:
+            return f"{100 - self.side_size_init_value}%"
+        return "100%"
+
+    @property
+    def c2_width(self) -> str:
+        """Column 2 width as percentage string"""
+        if self.side_size_init_scale:
+            return f"{self.side_size_init_value}%"
+        return "0%"
+
+    @property
+    def side_init_statistic_value(self) -> int:
+        """Side initial statistic value"""
+        if self.side_size_init_scale:
+            return int(not self.side_init_balance)
+        return 0
 
 # # Set up grid sizing
 # if config.ui.grid.side_size_init_scale:
@@ -84,17 +112,11 @@ class UIConfig(BaseModel):
     @property
     def date_format_code(self) -> str:
         """Get internal date format code"""
-        return {"ISO 8601": "ydm", "american": "mdy", "international": "dmy"}.get(
-            self.date_format, self.date_format
-        )
+        return {"ISO 8601": "ydm", "american": "mdy", "international": "dmy"}.get(self.date_format, self.date_format)
 
     @property
     def time_format_transaction(self) -> str:
-        formats = {
-            "ydm": "%y/%d/%m %H:%M",
-            "mdy": "%m/%d/%y %H:%M",
-            "dmy": "%d/%m/%y %H:%M"
-        }
+        formats = {"ydm": "%y/%d/%m %H:%M", "mdy": "%m/%d/%y %H:%M", "dmy": "%d/%m/%y %H:%M"}
         return formats[self.date_format_code]
 
     @property
@@ -102,7 +124,7 @@ class UIConfig(BaseModel):
         formats = {
             "ydm": "\u2007\u2007%a. %y/%d/%m %H:%M.%S",
             "mdy": "\u2007\u2007%a. %m/%d/%y %H:%M.%S",
-            "dmy": "\u2007\u2007%a. %d/%m/%y %H:%M.%S"
+            "dmy": "\u2007\u2007%a. %d/%m/%y %H:%M.%S",
         }
         return formats[self.date_format_code]
 
@@ -116,6 +138,7 @@ class UIConfig(BaseModel):
         formats = {"ydm": "%y / %d / %m", "mdy": "%m / %d / %y", "dmy": "%d / %m / %y"}
         return formats[self.date_format_code]
 
+
 class ScopeConfig(BaseModel):
     """Data scoping configuration."""
 
@@ -128,6 +151,7 @@ class ScopeConfig(BaseModel):
     def scope_by_both_mode(self) -> str:
         """Scope by both mode string"""
         return "or+" if self.strict_scope_by_both else "or"
+
 
 class CellRendererChangeConfig(BaseModel):
     """Cell renderer change animation configuration."""
@@ -239,6 +263,7 @@ class StatisticsConfig(BaseModel):
         if len(v) != 5:
             raise ValueError("group_default must have exactly 5 elements")
         return v
+
     @property
     def group_id_field(self) -> str:
         """Field to use for statistics grouping"""
@@ -248,6 +273,7 @@ class StatisticsConfig(BaseModel):
     def n_statistics_drag(self) -> int:
         """Number of draggable statistics sections"""
         return len(set(self.performance.order))
+
 
 class NotesConfig(BaseModel):
     """Notes interface configuration."""
