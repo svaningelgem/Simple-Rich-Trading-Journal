@@ -4,6 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "SimpleRichTradingJournal"
+version = "0.6.2.1"
 authors = [
     {name = "Adrian F. Hoefflin", email = "srccircumflex-srtj@outlook.com"},
 ]
@@ -43,6 +44,10 @@ dynamic = ["version"]
 [tool.setuptools.dynamic]
 version = {attr = "SimpleRichTradingJournal.__version__"}
 
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.13.1"
+
 [project.scripts]
 srtj = "SimpleRichTradingJournal.main:run"
 
@@ -58,3 +63,64 @@ Documentation = "https://simple-rich-trading-journal.github.io"
 Repository = "https://github.com/Simple-Rich-Trading-Journal/Simple-Rich-Trading-Journal"
 Issues = "https://github.com/Simple-Rich-Trading-Journal/Simple-Rich-Trading-Journal/issues"
 Changelog = "https://github.com/Simple-Rich-Trading-Journal/Simple-Rich-Trading-Journal#version-history"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+fix = true
+unsafe-fixes = true
+
+[tool.ruff.lint]
+# https://docs.astral.sh/ruff/rules
+select = [
+    "E",  # pycodestyle/flake8
+    "W",  # "
+    "F",  # pyflakes
+    "C",  # mccabe
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "Q",  # flake8-quotes
+    "N",  # pep8-naming
+    "ANN",  # flake8-annotations
+    "A",  # flake8-builtins
+    "COM",  # flake8-comma
+    "C4",  # flake8-comprehensions
+    "ISC",  # flake8-implicit-str-concat
+    "ICN",  # flake8-import-conventions
+    "G",  # flake8-logging-format
+    ##    "INP",  # flake8-no-pep420
+    #    "PIE",  # flake8-pie
+    "T20",  # flake8-print
+    #    "PYI",  # flake8-pyi
+    "PT",  # flake8-pytest-style
+    "RET",  # flake8-return
+    #    "SLF",  # flake8-self
+    "SIM",  # flake8-simplify
+    #    "TID",  # flake8-tidy-imports
+    "TCH",  # flake8-type-checking
+    "ARG",  # flake8-unused-arguments
+    #    "PD",  # pandas-vet
+    "PL",  # pylint
+    #    "FLY",  # flynt
+    #    "NPY",  # NumPy-specific rules
+    #    "AIR",  # Airflow
+    #    "PERF",  # Perflint
+    ##    "FURB",  # refurb
+    ##    "LOG",  # flake8-logging
+    "RUF",  # Ruff-specific rules
+    "UP",  # pyupgrade
+
+    "PTH",  # flake8-use-pathlib
+    # "ERA",  # eradicate
+    # "TRY", # tryceratops
+]
+
+ignore = [
+    "ISC001",
+    "COM812",
+    "SIM108",  # Use ternary operator `...` instead of `if`-`else`-block
+]
+fixable = ["ALL"]
+
+[tool.ruff.lint.isort]
+case-sensitive = false
