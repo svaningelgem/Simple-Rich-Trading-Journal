@@ -75,18 +75,6 @@ class GridConfig(BaseModel):
             return int(not self.side_init_balance)
         return 0
 
-# # Set up grid sizing
-# if config.ui.grid.side_size_init_scale:
-#     gridSideSizeInitValue = int(config.ui.grid.side_size_init_scale * 100)
-#     c2Width = f"{gridSideSizeInitValue}%"
-#     c1Width = f"{100 - gridSideSizeInitValue}%"
-#     sideInitStatisticValue = int(not config.ui.grid.side_init_balance)
-# else:
-#     gridSideSizeInitValue = 0
-#     c2Width = "0%"
-#     c1Width = "100%"
-#     sideInitStatisticValue = 0
-
 
 class UIConfig(BaseModel):
     """User interface configuration."""

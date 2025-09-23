@@ -143,13 +143,13 @@ def make_filelink(drop_obj, clone=True):
                 name = drop_obj["name"]
             else:
                 name = ""
-            link = f"![{name}]({__env__.FILE_CLONES_URL}/{link_name})"
+            link = f"![{name}]({__env__.paths.file_clones_url}/{link_name})"
         else:
-            link = f"[{drop_obj['name']}]({__env__.FILE_CLONES_URL}/{link_name})"
+            link = f"[{drop_obj['name']}]({__env__.paths.file_clones_url}/{link_name})"
         if clone:
             _header, encoded = drop_obj["data"].split(",", 1)
             data = b64decode(encoded)
-            with open(f"{__env__.FILE_CLONES}/{drop_obj['name']}", "wb") as f:
+            with open(f"{__env__.paths.file_clones}/{drop_obj['name']}", "wb") as f:
                 f.write(data)
     elif drop_obj["file"] in ("link", "path"):
         link = f"[{drop_obj['name']}]({drop_obj['data']})"
@@ -176,7 +176,7 @@ def fileClone(obj, style):
         file_pipe = no_update
 
         name = obj["name"]
-        dirlist = listdir(__env__.FILE_CLONES)
+        dirlist = listdir(__env__.paths.file_clones)
 
         if name in dirlist:
 

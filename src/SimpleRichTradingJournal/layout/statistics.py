@@ -359,6 +359,6 @@ STATISTICS = html.Div(
         "height": "100%",
         "overflowY": "scroll",
         "overflowX": "hidden",
-        "display": ("" if __env__.sideInitStatisticValue else "none"),
+        "display": ("" if __env__.config.ui.grid.side_init_statistic_value else "none"),
     },
 )

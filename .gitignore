@@ -166,3 +166,5 @@ cython_debug/
 .doc/
 .test/
 .utils/
+
+*.bak

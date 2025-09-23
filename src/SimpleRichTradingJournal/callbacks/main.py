@@ -380,7 +380,7 @@ def call(
 
     def save() -> None:
         if i_auto_save_n_clicks:
-            __env__.storage_adapter.dump_journal(__lc__.__mainFrame__.__get_log_json__())
+            __env__.data_manager.storage_adapter.dump_journal(__lc__.__mainFrame__.__get_log_json__())
 
     def set_index_by() -> None:
         nonlocal o_index_by_button_style, o_index_by_button_children, o_scope_by_button_style
@@ -460,12 +460,12 @@ def call(
                     return True
 
                 config.plugins.course_call = course_call
-                new_table(__env__.JOURNAL_DATA)
+                new_table(__env__.data_manager.journal_data)
                 config.plugins.course_call = _course_call
 
-            new_table(__env__.JOURNAL_DATA)
+            new_table(__env__.data_manager.journal_data)
 
-            o_backup_list_options = layout.make.make_history_list(__env__.HISTORY_KEYS_X_TIME_REVSORT)
+            o_backup_list_options = layout.make.make_history_list(__env__.data_manager.history_keys_x_time_revsort)
             newside()
             o_init_done_trigger_n_clicks = o_init_done_trigger2_n_clicks = 1
 
@@ -522,7 +522,7 @@ def call(
         # load backup
         elif __trigger__ == layout.history.history_list.id:
             save()
-            new_table(__env__.HISTORY_DATA[i_backup_list_value]["data"])
+            new_table(__env__.data_manager.history_data[i_backup_list_value]["data"])
             set_auto_save(False)
             newside()
 
@@ -689,6 +689,6 @@ def call(
         o_summary_footer_style = s_summary_error
         o_tradinglog_rowTransaction = no_update
     else:
-        o_summary_footer_style = s_summary_error_reset | __env__.get_footer_live_signal()
+        o_summary_footer_style = s_summary_error_reset | __env__.ui_utils.get_footer_live_signal()
 
     return _return()

@@ -46,13 +46,13 @@ class Server(Process):
         import __env__
         import layout
 
-        __env__.SERVER_PROC = self
+        __env__.server_manager.server_proc = self
 
         app = Dash(
             __project_name__,
-            title=__env__.PROFILE or __project_name__,
+            title=__env__.profile_manager.profile_name or __project_name__,
             update_title="working...",
-            assets_folder=__env__.DASH_ASSETS,
+            assets_folder=__env__.paths.dash_assets,
             assets_url_path=__env__._files.folder_profile_assets,
         )
         app.layout = layout.LAYOUT
@@ -84,7 +84,7 @@ def _suppress_exc(*args, **kwargs) -> None:
 if __name__ == "__main__":
     import __env__
 
-    if ping := __env__.ping():
+    if ping := __env__.server_manager.ping():
         pass
     else:
         server_proc = Server(name="srtj-server")
@@ -99,10 +99,10 @@ if __name__ == "__main__":
 
         # wait for server #################################################################################
 
-        __env__.make_pong_file(server_proc.pid)
+        __env__.ui_utils.write_pong_file(server_proc.pid)
 
         for _i in range(1, 21):
-            if __env__.ping():
+            if __env__.server_manager.ping():
                 break
             sleep(0.1)
         else:
@@ -110,4 +110,4 @@ if __name__ == "__main__":
 
         ###################################################################################################
 
-    __env__.CALL_GUI()
+    __env__.startup.call_gui()

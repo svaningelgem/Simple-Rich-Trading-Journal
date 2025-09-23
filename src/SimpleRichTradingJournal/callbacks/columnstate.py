@@ -15,8 +15,8 @@ if config.log.column_state_cache:
         config_prevent_initial_callbacks=True,
     )
     def init(n, col_defs):
-        if __env__.iniColumnState and __env__.COLUMN_CACHE_DATA:
-            widths = {c["colId"]: c["width"] for c in __env__.COLUMN_CACHE_DATA}
+        if __env__.column_cache.ini_state and __env__.column_cache.data:
+            widths = {c["colId"]: c["width"] for c in __env__.column_cache.data}
             for _col_def in col_defs:
                 try:
                     _col_def["width"] = widths[_col_def["field"]]
@@ -26,7 +26,7 @@ if config.log.column_state_cache:
                             child["width"] = widths[child["field"]]
                     except KeyError:
                         pass
-            return __env__.COLUMN_CACHE_DATA, col_defs, 1
+            return __env__.column_cache.data, col_defs, 1
         return no_update, no_update, 1
 
     @callback(
@@ -38,7 +38,7 @@ if config.log.column_state_cache:
     )
     def call(n, grid_opts, _state):
         if n:
-            __env__.dump_column_state(_state)
+            __env__.column_cache.dump(_state)
         return no_update
 
 
@@ -49,5 +49,5 @@ if config.log.column_state_cache:
     config_prevent_initial_callbacks=True,
 )
 def reset(_):
-    __env__.dump_column_state(None)
+    __env__.column_cache.dump(None)
     return layout.log.columnDefs, True

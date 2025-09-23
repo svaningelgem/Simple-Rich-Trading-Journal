@@ -294,7 +294,7 @@ class _Performance:
 
             if self.lc.calc_trades:
                 date = self.lc.calc_trades[-1].index_date
-                date_label = date.strftime(__env__.timeFormatLastCalc)
+                date_label = date.strftime(__env__.config.ui.time_format_last_calc)
                 date += timedelta(1)
                 date = date.strftime("%Y-%m-%d")
                 self.figure.add_shape(

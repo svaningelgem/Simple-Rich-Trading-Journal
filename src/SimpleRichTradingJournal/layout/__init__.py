@@ -81,7 +81,7 @@ LAYOUT = html.Div(
                                     ],
                                     id="gridC1",
                                     className="col-div col-div-flex border-div",
-                                    style={"width": __env__.c1Width, "height": "100%"},
+                                    style={"width": __env__.config.ui.grid.c1_width, "height": "100%"},
                                 ),
                                 split_handle := html.Div(
                                     id="gridSplitter",
@@ -100,7 +100,7 @@ LAYOUT = html.Div(
                                     id="gridC2",
                                     className="col-div col-div-flex border-div",
                                     style={
-                                        "width": __env__.c2Width,
+                                        "width": __env__.config.ui.grid.c2_width,
                                         "height": "100%",
                                     },
                                 ),
@@ -156,7 +156,7 @@ LAYOUT = html.Div(
         ),
         (
             html.Div(
-                __env__.PROFILE,
+                __env__.profile_manager.profile_name,
                 style={
                     "position": "absolute",
                     "bottom": 0,
@@ -170,7 +170,7 @@ LAYOUT = html.Div(
                 | styles.misc.summary_footer
                 | {"backgroundColor": ""},
             )
-            if __env__.PROFILE
+            if __env__.profile_manager.profile_name
             else html.Div()
         ),
         renderer_trigger := html.Div(id="renderer_trigger_", n_clicks=0),

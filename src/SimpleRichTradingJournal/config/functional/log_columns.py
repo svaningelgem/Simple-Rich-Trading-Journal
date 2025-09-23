@@ -319,7 +319,7 @@ TakeAmount = (
         "width": config.log.col_widths[13],
         "hide": not config.log.col_widths[13],
     }
-    | __env__.cellRendererChangeTakeAmount
+    | __env__.ui_utils.get_cell_renderer_config()['take_amount']
     | _calcCell
 )
 
@@ -329,7 +329,7 @@ TakeCourse = (
         "width": config.log.col_widths[14],
         "hide": not config.log.col_widths[14],
     }
-    | __env__.cellRendererChangeTakeCourse
+    | __env__.ui_utils.get_cell_renderer_config()['take_course']
     | _calcCell
 )
 
@@ -396,7 +396,7 @@ Performance = {
     },
     "width": config.log.col_widths[16],
     "hide": not config.log.col_widths[16],
-} | __env__.cellRendererChangePerformance
+} | __env__.ui_utils.get_cell_renderer_config()['performance']
 
 Profit = {
     "cellStyle": {
@@ -418,7 +418,7 @@ Profit = {
     },
     "width": config.log.col_widths[17],
     "hide": not config.log.col_widths[17],
-} | __env__.cellRendererChangeProfit
+} | __env__.ui_utils.get_cell_renderer_config()['profit']
 
 Dividend = {
     "cellStyle": {

@@ -156,7 +156,7 @@ def course_update(
         o_tradinglog_rowTransaction = no_update
     else:
         o_summary_footer_style = (
-            i_summary_footer_style | styles.misc.summary_error_reset | __env__.get_footer_live_signal()
+            i_summary_footer_style | styles.misc.summary_error_reset | __env__.ui_utils.get_footer_live_signal()
         )
         o_fin = False
     return (

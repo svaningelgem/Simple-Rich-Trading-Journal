@@ -136,7 +136,7 @@ reset_columns_button = html.Button(
 statistics_button = html.Button(
     "STATISTICS",
     id="statistics_button_",
-    n_clicks=__env__.sideInitStatisticValue,
+    n_clicks=__env__.config.ui.grid.side_init_statistic_value,
     style={
         "display": "inline-block",
         "margin": "7px",

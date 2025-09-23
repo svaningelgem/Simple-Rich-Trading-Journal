@@ -101,7 +101,7 @@ class _Positions:
                             color = config.themes.cell_posvalue
                     else:
                         gr = trade[group_by[0]]
-                        color = __env__.get_position_color(gr)
+                        color = __env__.color_cache.get_position_color(gr)
                     if fork := self.forks.get(gr):
                         fork.trades.append(trade)
                     else:

@@ -78,30 +78,6 @@ class ConfigManager:
         """Delegate attribute access to config model."""
         return getattr(self._config, name)
 
-    def get_legacy(self, name: str) -> Any:
-        """Get config value by legacy name for backward compatibility."""
-        mappings = {
-            'dateFormat': lambda: self.ui.date_format,
-            'columnStateCache': lambda: self.log.column_state_cache,
-            'statisticsUsePositionColorCache': lambda: self.statistics.use_position_color_cache,
-            'noteFileDropCloner': lambda: self.notes.file_drop_cloner,
-            'noteFileDropClonerFlushTrashing': lambda: self.notes.file_drop_cloner_flush_trashing,
-        }
-
-        if name in mappings:
-            return mappings[name]()
-
-        if hasattr(self.themes, name):
-            return getattr(self.themes, name)
-
-        for section in ['main', 'alt', 'columns', 'records', 'cell_values',
-                        'marks', 'figures', 'footer', 'topbar', 'balance',
-                        'notepaper', 'notebook', 'noteeditor_dialog']:
-            if hasattr(getattr(self.themes, section, None), name):
-                return getattr(getattr(self.themes, section), name)
-
-        raise AttributeError(f"Config has no attribute '{name}'")
-
 
 # Global singleton instance
 config = ConfigManager()

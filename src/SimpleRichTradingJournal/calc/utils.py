@@ -29,13 +29,13 @@ def tradetimeparser(spec: str):
             date = datetime(int(m.group(3)), int(m.group(2)), int(m.group(1)), int(m.group(4)), int(m.group(5)))
         else:
             raise ValueError(f"FormatError: {spec!r}")
-        return date.strftime(__env__.timeFormatTransaction)
+        return date.strftime(__env__.config.ui.time_format_transaction)
     return ""
 
 
 def datetime_from_tradetimeformat(spec: str, default=None):
     try:
-        return datetime.strptime(spec, __env__.timeFormatTransaction)
+        return datetime.strptime(spec, __env__.config.ui.time_format_transaction)
     except (ValueError, TypeError):
         return default
 
